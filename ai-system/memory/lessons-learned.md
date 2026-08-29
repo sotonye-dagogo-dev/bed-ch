@@ -1,34 +1,13 @@
 # Lessons Learned
 
 > **Metadata**
-> - last-updated-by: (set on first entry)
-> - last-verified-against-code: (set after lesson review)
-> - staleness-policy: each entry has its own staleness — check supersedes links
+>
+> - last-updated-by: bootstrap-project
+> - last-verified-against-code: 2026-08-29
+> - staleness-policy: append-only; never delete, only supersede with new entry linking back
 
-> **Overview:** Practical knowledge accumulated during development — things that worked well, things that didn't, and patterns worth repeating. Different from `repair-system.md` (tracks errors); this file tracks development process insights and architectural wisdom. Uses supersedes/superseded-by links for evolving practices.
-
----
-
-## Entry Format
-
-```
-## [Lesson Title]
-
-**Context:**
-[What situation this came from]
-
-**What We Learned:**
-[The insight or pattern discovered]
-
-**Apply When:**
-[When future agents/developers should use this knowledge]
-
-**Supersedes:** [link to any prior lesson this replaces, or None]
-**Superseded by:** [link to any newer lesson that replaces this, or None]
-```
+> **Overview:** Debugging insights, patterns that worked/failed, gotchas discovered. Each entry: Situation, What Happened, Root Cause, Fix, Prevention.
 
 ---
 
-## Lessons
-
-[Entries added here as lessons are discovered]
+*No entries yet — this file will be populated during development.*

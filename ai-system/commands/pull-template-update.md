@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: v3 upgrade (pull-template-update)
-> - last-verified-against-code: (set on first run)
+> - last-verified-against-code: 2026-08-29
 > - staleness-policy: re-verify if the version-comparison or merge policy changes
 
 > **Overview:** Pull-based template update propagation. Compares the installed kit's recorded version (in `ai-context.md` metadata, set at bootstrap) against the upstream template's `VERSION`. If newer, fetches the changed files, diffs them against local copies, and **proposes** a merge — it never silently overwrites a file that diverges from the version it was bootstrapped from. Produces a human-reviewable diff; does not auto-apply.

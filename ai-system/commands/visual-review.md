@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: v3 upgrade (visual-review)
-> - last-verified-against-code: (set on first run)
+> - last-verified-against-code: 2026-08-29
 > - staleness-policy: re-verify if the design system or browsing capability changes
 
 > **Overview:** Opens a preview/deployment URL (or local dev server address) and compares the rendered output against `design-system.md` tokens and any relevant `design-references/*/DESIGN.md`. Reports drift as findings. Does **not** modify code — same contract shape as `verify-work.md`.
