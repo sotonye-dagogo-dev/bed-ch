@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: v3 upgrade (audit-sources)
-> - last-verified-against-code: (set on first run)
+> - last-verified-against-code: 2026-08-29
 > - staleness-policy: re-verify if the registry structure or resource policy changes
 
 > **Overview:** Evaluates a batch of external links/resources against the current `ai-system` structure and records the verdict in `tools/registry.md`. The mechanism for every "here are more tools/links" drop — one row per resource, appended, nothing lost. Re-run every time the operator supplies a new batch.
