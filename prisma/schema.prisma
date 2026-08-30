@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  shortDesc   String?
+  price       Int      // in kobo (₦6500 = 650000)
+  compareAt   Int?     // original price for discounts
+  images      String[] // URLs
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  chapter     Chapter? @relation(fields: [chapterId], references: [id])
+  chapterId   String?
+  variants    ProductVariant[]
+  isBestseller Boolean @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([chapterId])
+  @@index([isBestseller])
+  @@index([isActive])
+}
+
+model ProductVariant {
+  id         String     @id @default(cuid())
+  productId  String
+  product    Product    @relation(fields: [productId], references: [id])
+  size       String?    // e.g., "Single", "Queen", "King"
+  color      String?
+  sku        String     @unique
+  stock      Int        @default(0)
+  price      Int?       // override price in koba
+  cartItems  CartItem[]
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  icon        String?   // icon name or emoji
+  sortOrder   Int       @default(0)
+  products    Product[]
+  isActive    Boolean   @default(true)
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model Chapter {
+  id          String    @id @default(cuid())
+  name        String    // "Nursery", "Teen", "Newlywed", etc.
+  slug        String    @unique
+  headline    String    // "The Nursery Bedroom"
+  intro       String    // 2-sentence intro
+  image       String?   // hero image
+  sortOrder   Int       @default(0)
+  products    Product[]
+  bundleOffer BundleOffer?
+  isActive    Boolean   @default(true)
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model BundleOffer {
+  id          String   @id @default(cuid())
+  chapterId   String   @unique
+  chapter     Chapter  @relation(fields: [chapterId], references: [id])
+  name        String   // "Nursery Starter Bundle"
+  description String
+  productIds  String[] // array of product IDs
+  discountPct Int      // percentage off
+  isActive    Boolean  @default(true)
+}
+
+model Cart {
+  id        String      @id @default(cuid())
+  sessionId String      @unique // anonymous session
+  items     CartItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([sessionId])
+}
+
+model CartItem {
+  id        String @id @default(cuid())
+  cartId    String
+  cart      Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  quantity  Int    @default(1)
+
+  @@unique([cartId, variantId])
+}
+
+model Order {
+  id              String       @id @default(cuid())
+  orderNumber     String       @unique // human-readable: BC-2026-0001
+  customerName    String
+  customerPhone   String
+  customerEmail   String?
+  address         String
+  city            String
+  state           String
+  deliveryOption  DeliveryOption
+  paymentMethod   PaymentMethod
+  paymentStatus   PaymentStatus @default(PENDING)
+  paystackRef     String?      // Paystack transaction reference
+  subtotal        Int          // in kobo
+  deliveryFee     Int
+  discount        Int          @default(0)
+  total           Int          // in kobo
+  items           OrderItem[]
+  status          OrderStatus  @default(PENDING)
+  notes           String?      // customer notes
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([customerPhone])
+  @@index([paymentStatus])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  variantId String?
+  name      String // snapshot at purchase
+  size      String?
+  color     String?
+  price     Int    // in kobo at purchase
+  quantity  Int
+}
+
+enum DeliveryOption {
+  STANDARD
+  EXPRESS_LAGOS
+  PAY_ON_DELIVERY
+}
+
+enum PaymentMethod {
+  PAYSTACK_CARD
+  PAYSTACK_TRANSFER
+  PAYSTACK_USSD
+  PAY_ON_DELIVERY
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIAL_REFUND
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
