@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: bootstrap-project
-> - last-verified-against-code: 2026-08-29
+> - last-updated-by: update-ai-system
+> - last-verified-against-code: 2026-08-30
 > - staleness-policy: re-verify if design tokens or component library changes
 
 > **Overview:** UI/UX rules, design tokens, component patterns, and accessibility standards derived from the design brief.
