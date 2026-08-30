@@ -1,114 +1,191 @@
-# Default Template
+# Bedroom Chapters
 
-A GitHub template repository incorporating the **`ai-system` v3** framework for AI-assisted software development, pre-configured with an **opencode local trigger workflow**.
+A modern Nigerian e-commerce platform for quality bedroom essentials — bedding, pillows, rugs, curtains, lighting, and more. Built with Next.js 14, TypeScript, Tailwind CSS, and Prisma.
 
----
+## Features
 
-## What's Included
+- **Chapter-based Shopping** — 9 curated life-stage collections (Nursery, Newlywed, Teen, Guest, Master, Minimalist, Boho, Modern, Kids)
+- **Pay on Delivery** — Cash/card on delivery in Lagos, Abuja & Port Harcourt (orders ≤₦50k)
+- **Lagos Same-Day Delivery** — Order before 12pm for same-day delivery
+- **7-Day Returns** — No questions asked return policy
+- **Paystack Integration** — Card, bank transfer, and USSD payments
+- **WhatsApp Ordering** — Chat-to-order with pre-filled messages
+- **Mobile-First** — Optimized for 90% mobile traffic
+- **Performance** — ISR, optimized images, <3s load on 3G
 
-### `ai-system/` — AI-Assisted Development System
+## Tech Stack
 
-A vendor-neutral, model-agnostic framework for AI-assisted software development. Provides structured documentation, command-driven workflows, and quality gates that work identically across any AI coding tool.
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS with custom design tokens
+- **Database**: PostgreSQL with Prisma ORM
+- **Payments**: Paystack
+- **Analytics**: GA4, Meta Pixel, Hotjar
+- **Forms**: React Hook Form + Zod
+- **Animation**: Framer Motion
+- **Icons**: Lucide React
 
-```
-ai-system/
-├── protocols/          # Entry, tiering, QA, escalation, verification
-├── agents/             # Function-based roles (Planner, Architect, Implementer, etc.)
-├── commands/           # Reusable command pipelines (execute-feature, dev-cycle, etc.)
-├── skills/             # On-demand expertise units (SKILL.md + trigger self-invocation)
-├── tools/              # External resource registry (registry.md + integrations/ docs)
-├── standards/          # Engineering principles
-├── design-references/  # Pulled reference-design languages (Tier 4, human reconciliation)
-├── system-architecture.md  # Structural docs with freshness metadata
-├── project-context.md      # Project goals and constraints
-├── design-system.md        # UI/UX rules
-├── repair-system.md        # Error knowledge base
-├── planning/           # Task queue and project plan (with complexity tagging)
-├── memory/             # Decisions and lessons (with supersedes links)
-├── index/              # Repo map and dependency graph (auto-regenerable)
-├── testing/            # Test plan and results
-├── checkpoints/        # Session log (append-only) + in-progress (singular, overwritten)
-└── summaries/          # Development history
-```
+## Getting Started
 
-### `ai-context.md` — Session entry point
+### Prerequisites
 
-The first file any AI agent reads to get a 30-second project orientation. Also records the installed `ai-system` version (the baseline for `pull-template-update.md`).
+- Node.js 18+
+- PostgreSQL database
+- Paystack account (for payments)
+- WhatsApp Business number
 
-### `integrations/examples/tool-integration.md` — Optional integration example
-
-Non-normative example of wiring an AI tool to `ai-system`. Keep tool-specific config out of the core kit.
-
-### `VERSION` + `CHANGELOG.md` — Versioning
-
-`VERSION` records the installed kit version; `CHANGELOG.md` lists what changed between releases. Together they make `pull-template-update.md` (diff-based, never silent overwrite) work.
-
-### `MIGRATION.md` + `V2_TO_V3_MIGRATION.md` — Upgrade guides
-
-`MIGRATION.md` covers upgrading existing projects from `ai-system` v1 to v2; `V2_TO_V3_MIGRATION.md` covers v2 to v3.
-
-### `.github/workflows/opencode.yml` — Opencode local trigger
-
-Enables running opencode agents directly from issue comments and PR review comments using `/oc`, `/opencode`, `/design`, `/od`, and `/opendesign` commands. Delegates to the central workflow runner in the [sotonye-dagogo-dev/github-workflows](https://github.com/sotonye-dagogo-dev/github-workflows) repository.
-
----
-
-## How to Use This Template
-
-### 1. Create a Repository from This Template
-
-Click **"Use this template"** on GitHub to create a new repository.
-
-### 2. Clone and Bootstrap
+### Installation
 
 ```bash
-git clone <your-new-repo-url>
-cd <your-repo>
+# Clone the repository
+git clone <repository-url>
+cd bed-ch
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Set up database
+npm run prisma:generate
+npm run prisma:push
+
+# Seed database with sample data
+npm run db:seed
+
+# Start development server
+npm run dev
 ```
 
-Then, in your AI tool, run the bootstrap command:
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | Yes |
+| `PAYSTACK_SECRET_KEY` | Paystack secret key (server) | Yes |
+| `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Paystack public key (client) | Yes |
+| `PAYSTACK_WEBHOOK_SECRET` | Paystack webhook signature secret | Yes |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | WhatsApp Business number (234 format) | Yes |
+| `NEXT_PUBLIC_GA4_ID` | Google Analytics 4 Measurement ID | No |
+| `NEXT_PUBLIC_META_PIXEL_ID` | Meta Pixel ID | No |
+| `NEXT_PUBLIC_HOTJAR_ID` | Hotjar Site ID | No |
+| `NEXT_PUBLIC_APP_URL` | Application URL | Yes |
+
+## Project Structure
 
 ```
-Execute command: ai-system/commands/bootstrap-project.md
-Directive: [describe your project, e.g., "Next.js + Node.js marketplace app"]
+src/
+├── app/                    # Next.js App Router pages
+│   ├── (shop)/            # Shop route group
+│   │   ├── shop/          # Shop page with filters
+│   │   ├── product/[id]/  # Product detail page
+│   │   ├── chapter/[slug]/# Chapter pages
+│   │   ├── cart/          # Cart page
+│   │   └── checkout/      # Multi-step checkout
+│   ├── globals.css        # Global styles + design tokens
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx           # Homepage
+├── components/
+│   ├── ui/                # Reusable UI primitives
+│   │   ├── Button.tsx
+│   │   ├── Input.tsx
+│   │   ├── Select.tsx
+│   │   ├── Card.tsx
+│   │   ├── Badge.tsx
+│   │   ├── Sheet.tsx
+│   │   └── Skeleton.tsx
+│   ├── layout/            # Layout components
+│   │   ├── Header.tsx
+│   │   ├── Footer.tsx
+│   │   └── TrustBar.tsx
+│   ├── product/           # Product components
+│   │   ├── ProductGrid.tsx
+│   │   └── FilterSidebar.tsx
+│   ├── cart/              # Cart components
+│   │   └── CartSlideOut.tsx
+│   ├── whatsapp/          # WhatsApp components
+│   │   └── WhatsAppFloatButton.tsx
+│   └── analytics/         # Analytics providers
+│       ├── GA4.tsx
+│       ├── MetaPixel.tsx
+│       ├── Hotjar.tsx
+│       └── AnalyticsProviders.tsx
+├── lib/
+│   ├── prisma.ts          # Prisma client singleton
+│   ├── utils.ts           # Utility functions
+│   └── db/                # Database queries
+│       ├── products.ts
+│       ├── categories.ts
+│       └── chapters.ts
+prisma/
+├── schema.prisma          # Database schema
+└── seed.ts                # Database seed script
 ```
 
-### 3. Start Development
+## Design System
 
+The design system is defined in `src/app/globals.css` and `tailwind.config.ts` with tokens for:
+
+- **Colors**: Sage green primary, warm sand secondary, neutrals, semantic colors
+- **Typography**: Inter font, fluid clamp() sizing
+- **Spacing**: 4px base unit system
+- **Border Radius**: 4px, 8px, 12px, full
+- **Shadows**: 4 levels (sm, md, lg, xl)
+- **Components**: Buttons, cards, forms, badges, sheets, skeletons
+
+## Database Schema
+
+Key models:
+- **Product** — name, slug, description, price, images, category, chapter, variants
+- **ProductVariant** — size, color, SKU, stock, price override
+- **Category** — 8 categories (Bedding, Pillows, Rugs, Curtains, Lighting, Storage, Nightwear, Function)
+- **Chapter** — 9 life-stage chapters with bundle offers
+- **Cart/CartItem** — Anonymous session-based cart
+- **Order/OrderItem** — Orders with delivery/payment options
+- **BundleOffer** — Chapter-level bundle discounts
+
+## Available Scripts
+
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run typecheck    # Run TypeScript type checking
+npm run prisma:generate  # Generate Prisma client
+npm run prisma:push      # Push schema to database
+npm run prisma:studio    # Open Prisma Studio
+npm run db:seed          # Seed database with sample data
 ```
-Execute command: ai-system/commands/dev-cycle.md
-```
 
-### 4. Pull Future Template Updates (Optional)
+## Deployment
 
-```
-Execute command: ai-system/commands/pull-template-update.md
-```
+### Vercel (Recommended)
 
-Compares the installed kit version against the upstream template's `VERSION`, then proposes a diff-based merge — it never silently overwrites locally customized files.
+1. Push to GitHub
+2. Import project in Vercel
+3. Add environment variables
+4. Deploy
 
-### 5. Use Opencode (Optional)
+### Database
 
-Comment `/oc` on any issue or PR to trigger an opencode agent session via the configured workflow.
+Use Vercel Postgres, Supabase, or any PostgreSQL provider.
 
----
+### Paystack
 
-## Prerequisites & Suggestions
+1. Add webhook URL: `https://your-domain.com/api/webhooks/paystack`
+2. Switch to live keys for production
 
-- **GitHub Organization**: For teams, set up an org-level secrets and environments to share across repos using this template.
-- **Repository Secrets**: If using the opencode workflow, ensure `GITHUB_TOKEN` has the necessary permissions (contents write, pull requests write, issues write).
-- **AI Tool**: Any AI coding tool that can read `ai-context.md` at session start (CLI, IDE extension, API loop, or autonomous agent).
-- **GitHub Workflows Repo**: The opencode trigger workflow references `sotonye-dagogo-dev/github-workflows`. Ensure this repository is accessible within your org, or update the workflow reference accordingly.
+## Development Guidelines
 
----
-
-## References
-
-- **`ai-system` Framework Docs**: See [Sotonye0808/ai-system-template](https://github.com/Sotonye0808/ai-system-template) for the canonical `ai-system` documentation and philosophy.
-- **Opencode Workflows**: See [sotonye-dagogo-dev/github-workflows](https://github.com/sotonye-dagogo-dev/github-workflows) for the central workflow runners.
-
----
+- Follow the `ai-system` command workflows for feature development
+- Use `npm run lint` and `npm run typecheck` before committing
+- Mobile-first responsive design (375px → 1440px)
+- All prices stored in kobo (₦1 = 100 kobo)
+- Server Components by default, Client Components for interactivity
 
 ## License
 
-See [LICENSE](./LICENSE).
+MIT License — see [LICENSE](./LICENSE) for details.
