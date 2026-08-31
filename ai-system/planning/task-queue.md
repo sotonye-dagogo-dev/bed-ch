@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: update-ai-system
-> - last-synced: 2026-08-30
+> - last-synced: 2026-08-31
 > - staleness-policy: update after every session; re-prioritize weekly
 
 > **Overview:** Immediate actionable tasks. Pull from here for `dev-cycle.md` or `execute-feature.md`. Format: `[TAG] Task description — context/acceptance`
@@ -32,14 +32,14 @@
 
 | Task | Complexity | Context / Acceptance Criteria |
 |------|------------|-------------------------------|
-| `[~] [L] Implement product queries (list, get, search, by-category, by-chapter)` | L | `@/lib/db/products.ts` with caching (ISR 1hr), proper TypeScript types — **Currently mock data** |
-| `[~] [L] Implement category & chapter queries` | L | `@/lib/db/categories.ts`, `@/lib/db/chapters.ts` — **Currently mock data** |
+| `[x] [L] Implement product queries (list, get, search, by-category, by-chapter)` | L | `@/lib/db/products.ts` with caching (ISR 1hr), proper TypeScript types — **Now using real Prisma data** |
+| `[x] [L] Implement category & chapter queries` | L | `@/lib/db/categories.ts`, `@/lib/db/chapters.ts` — **Now using real Prisma data** |
 | `[x] [L] Build Homepage: Hero + Search + Two-Path + Bestsellers + Chapter Teaser` | L | Server component, `getBestsellers(8-12)`, `getActiveChapters(9)`, responsive grid |
 | `[x] [L] Build Shop Page: Sidebar filters + ProductGrid + Pagination` | L | URL-based filters (category, price, size, color, chapter), 2/3/4/5 col grid |
 | `[x] [L] Build Product Detail Page: Gallery, SizeSelector, AddToCart, CompleteTheLook` | L | Server component for product, client components for interactions |
 | `[x] [M] Build Category Pages (dynamic routes)` | M | `/shop/[category]` reuses shop components with pre-filter |
 | `[x] [M] Configure Next.js Image optimization (CDN, blur placeholders, sizes)` | M | `next.config.js` remotePatterns, product image component with priority/lazy |
-| `[x] [M] Add SEO: meta tags, Open Graph, product schema, sitemap.xml, robots.txt` | M | `next-sitemap` or custom, JSON-LD Product schema on product pages — **sitemap/robots pending** |
+| `[x] [M] Add SEO: meta tags, Open Graph, product schema, sitemap.xml, robots.txt` | M | Custom sitemap generator, JSON-LD Product schema on product pages |
 
 ---
 
@@ -47,52 +47,52 @@
 
 | Task | Complexity | Context / Acceptance Criteria |
 |------|------------|-------------------------------|
-| `[~] [M] Build Chapter Page template: Hero + Curated Grid + BundleOffer` | M | `/chapter/[slug]`, `getChapterBySlug`, `getProductsByChapter(12-20)`, bundle CTA — **Mock data** |
+| `[x] [M] Build Chapter Page template: Hero + Curated Grid + BundleOffer` | M | `/chapter/[slug]`, `getChapterBySlug`, `getProductsByChapter(12-20)`, bundle CTA — **Now using real Prisma data** |
 | `[x] [S] Add chapter navigation: Homepage teaser (9 cards), Shop sidebar filter` | S | ChapterCard component, ChapterGrid 3x3 mobile / horizontal scroll desktop |
 | `[x] [S] Implement bundle offer: display discounted price, add-bundle-to-cart` | S | BundleOffer component, adds multiple CartItems at once (mock navigation) |
 
 ---
 
-## 🛒 Phase 3: Cart & Checkout 🔄 UI COMPLETE, BACKEND PENDING
+## 🛒 Phase 3: Cart & Checkout ✅ COMPLETE
 
 | Task | Complexity | Context / Acceptance Criteria |
 |------|------------|-------------------------------|
-| `[ ] [L] Implement cart queries (get, add, update, remove, clear) + session cookie` | L | Anonymous cart via `sessionId` cookie (1yr), Prisma Cart + CartItem models |
+| `[x] [L] Implement cart queries (get, add, update, remove, clear) + session cookie` | L | Anonymous cart via `sessionId` cookie (1yr), Prisma Cart + CartItem models |
 | `[x] [L] Build CartSlideOut: Slide-out sheet, CartItem list, CartSummary, Checkout CTA` | L | Framer Motion animation, sticky header/footer, portal to body |
-| `[x] [L] Build Checkout Page: Multi-step form (Contact → Delivery → Payment → Confirm)` | L | React Hook Form + Zod (client-side only), progress indicator, mock submit |
+| `[x] [L] Build Checkout Page: Multi-step form (Contact → Delivery → Payment → Confirm)` | L | React Hook Form + Zod (client-side only), progress indicator, real submit |
 | `[x] [M] Implement delivery options: Standard, Express Lagos, POD (conditional)` | M | POD only for Lagos/Abuja/PH ≤₦50k, show escrow note, calculate fees |
-| `[x] [M] Implement payment methods: Paystack (card/transfer/USSD) + POD radio` | M | Paystack inline embed for card, redirect for transfer/USSD, POD creates order directly (UI only) |
-| `[ ] [S] Create Order on checkout submit (PENDING status, clear cart)` | S | Server action: create Order + OrderItems, generate orderNumber (BC-YYYY-NNNN) |
+| `[x] [M] Implement payment methods: Paystack (card/transfer/USSD) + POD radio` | M | Paystack inline embed for card, redirect for transfer/USSD, POD creates order directly |
+| `[x] [S] Create Order on checkout submit (PENDING status, clear cart)` | S | Server action: create Order + OrderItems, generate orderNumber (BC-YYYY-NNNN) |
 
 ---
 
-## 💳 Phase 4: Payments
+## 💳 Phase 4: Payments ✅ COMPLETE
 
 | Task | Complexity | Context / Acceptance Criteria |
 |------|------------|-------------------------------|
-| `[L] Integrate Paystack: initializePayment, verifyPayment, webhook handler` | L | `@/lib/paystack.ts` with types, secret key server-only, public key client |
-| `[L] Build Paystack checkout flow: redirect → callback → verify → success/fail` | L | `/checkout?payment=paystack` → Paystack → `/checkout/callback` → verify → `/order/[id]/success` |
-| `[M] Implement Pay on Delivery flow: create order → WhatsApp admin → confirm` | M | POD creates order directly, sends WhatsApp to admin with order details |
-| `[M] Handle Paystack webhooks: charge.success, charge.failed → update order` | M | Verify signature, update Order.paymentStatus, send confirmations |
-| `[S] Build success/failure pages with order details and WhatsApp CTA` | S | Success: order summary, tracking info; Failure: retry, contact support |
-| `[S] Send order confirmations: WhatsApp (customer + admin), email (future)` | S | `src/lib/whatsapp.ts` generate URLs with order details |
+| `[x] [L] Integrate Paystack: initializePayment, verifyPayment, webhook handler` | L | `@/lib/paystack.ts` with types, secret key server-only, public key client |
+| `[x] [L] Build Paystack checkout flow: redirect → callback → verify → success/fail` | L | `/checkout?payment=paystack` → Paystack → `/checkout/callback` → verify → `/order/[id]/success` |
+| `[x] [M] Implement Pay on Delivery flow: create order → WhatsApp admin → confirm` | M | POD creates order directly, sends WhatsApp to admin with order details |
+| `[x] [M] Handle Paystack webhooks: charge.success, charge.failed → update order` | M | Verify signature, update Order.paymentStatus, send confirmations |
+| `[x] [S] Build success/failure pages with order details and WhatsApp CTA` | S | Success: order summary, tracking info; Failure: retry, contact support |
+| `[x] [S] Send order confirmations: WhatsApp (customer + admin), email (future)` | S | `src/lib/whatsapp.ts` generate URLs with order details |
 
 ---
 
-## ✨ Phase 5: Polish & Launch Prep
+## ✨ Phase 5: Polish & Launch Prep 🔄 IN PROGRESS
 
 | Task | Complexity | Context / Acceptance Criteria |
 |------|------------|-------------------------------|
-| `[M] Add loading skeletons for all async components (products, chapters, cart)` | M | Skeleton components matching final layout, no layout shift |
-| `[M] Add error boundaries + empty states (no products, empty cart, 404)` | M | Graceful degradation, helpful messaging, retry buttons |
-| `[L] Accessibility audit: focus management, ARIA, contrast, reduced motion` | L | axe-core, manual testing, `prefers-reduced-motion` respected |
-| `[L] Performance audit: LCP < 2.5s, CLS < 0.1, TBT < 200ms on 3G throttle` | L | Lighthouse CI, WebPageTest, optimize images, reduce JS |
-| `[M] Cross-browser testing: Chrome, Safari, Firefox (mobile + desktop)` | M | BrowserStack or local devices, fix layout issues |
-| `[L] Populate production content: real photos, descriptions, prices (12+ products)` | L | Minimum 8-12 bestsellers with real Nigerian bedroom photos |
-| `[M] Write 5 journal articles for SEO launch` | M | Topics: "How to choose bedsheets", "Bedroom setup for newlyweds", etc. |
-| `[S] Legal pages: Terms, Privacy, Delivery & Returns` | S | Static pages with Nigerian consumer law compliance |
-| `[S] Switch to live keys: Paystack live, GA4 live, Meta Pixel live, WhatsApp Business` | S | Update `.env.production`, verify all integrations |
-| `[S] Deploy to Vercel: custom domain, SSL, environment variables` | S | `vercel --prod`, configure domain, verify all env vars |
+| `[x] [M] Add loading skeletons for all async components (products, chapters, cart)` | M | Skeleton components matching final layout, no layout shift |
+| `[x] [M] Add error boundaries + empty states (no products, empty cart, 404)` | M | Graceful degradation, helpful messaging, retry buttons |
+| `[x] [L] Accessibility audit: focus management, ARIA, contrast, reduced motion` | L | axe-core, manual testing, `prefers-reduced-motion` respected |
+| `[x] [L] Performance audit: LCP < 2.5s, CLS < 0.1, TBT < 200ms on 3G throttle` | L | Lighthouse CI, WebPageTest, optimize images, reduce JS |
+| `[ ] [M] Cross-browser testing: Chrome, Safari, Firefox (mobile + desktop)` | M | BrowserStack or local devices, fix layout issues |
+| `[ ] [L] Populate production content: real photos, descriptions, prices (12+ products)` | L | Minimum 8-12 bestsellers with real Nigerian bedroom photos |
+| `[ ] [M] Write 5 journal articles for SEO launch` | M | Topics: "How to choose bedsheets", "Bedroom setup for newlyweds", etc. |
+| `[x] [S] Legal pages: Terms, Privacy, Delivery & Returns` | S | Static pages with Nigerian consumer law compliance |
+| `[ ] [S] Switch to live keys: Paystack live, GA4 live, Meta Pixel live, WhatsApp Business` | S | Update `.env.production`, verify all integrations |
+| `[ ] [S] Deploy to Vercel: custom domain, SSL, environment variables` | S | `vercel --prod`, configure domain, verify all env vars |
 
 ---
 
@@ -145,6 +145,6 @@
 ## Current Sprint Focus
 
 **Sprint 0 (Foundation):** ✅ COMPLETE — All UI tasks done, CI/CD pending
-**Sprint 1 (Backend Integration):** 🔄 NEXT — Replace mock data with real Prisma queries, implement cart/checkout backend, add Paystack
-**Sprint 2 (Payments):** ❌ PENDING — Paystack integration, POD flow, webhooks
-**Sprint 3 (Polish + Launch):** ❌ PENDING — Accessibility, performance, content, deployment
+**Sprint 1 (Backend Integration):** ✅ COMPLETE — Replace mock data with real Prisma queries, implement cart/checkout backend
+**Sprint 2 (Payments):** ✅ COMPLETE — Paystack integration, POD flow, webhooks
+**Sprint 3 (Polish + Launch):** 🔄 IN PROGRESS — Cross-browser testing, production content, journal articles, live keys, Vercel deployment

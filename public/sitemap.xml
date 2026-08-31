@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+  <url><loc>http://localhost:3000/</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>daily</changefreq><priority>1</priority></url>
+  <url><loc>http://localhost:3000/shop</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>http://localhost:3000/terms</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>http://localhost:3000/privacy</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>http://localhost:3000/delivery-returns</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>http://localhost:3000/shop/rugs</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/shop/storage</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/shop/nightwear</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/shop/function</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/shop/lighting</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/shop/pillows</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/shop/curtains</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/shop/bedding</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/chapter/newlywed</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>http://localhost:3000/chapter/modern</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>http://localhost:3000/chapter/nursery</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>http://localhost:3000/chapter/minimalist</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>http://localhost:3000/chapter/teen</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>http://localhost:3000/chapter/guest</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>http://localhost:3000/chapter/master</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>http://localhost:3000/chapter/boho</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>http://localhost:3000/chapter/kids</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>http://localhost:3000/chapter/function</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>http://localhost:3000/product/organic-cotton-sheet-set</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/shaggy-rug-cream</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/linen-duvet-cover-set</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/down-alternative-pillow-pair</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/wool-blend-area-rug</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/ceramic-table-lamp</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/underbed-storage-set</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/blackout-curtains-pair</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/dimmable-floor-lamp</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/sheer-linen-curtains</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/cotton-pajama-set</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/bedside-caddy</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/memory-foam-pillow</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>http://localhost:3000/product/bamboo-sheet-set</loc><lastmod>2026-08-31T07:39:29.573Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+</urlset>

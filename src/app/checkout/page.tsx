@@ -6,29 +6,10 @@ import { Check, Truck, Shield, CreditCard, Smartphone, Loader2 } from 'lucide-re
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Select, SelectOption } from '@/components/ui/Select';
+import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
-import { formatCurrency, calculateDeliveryFee, NIGERIAN_STATES, DELIVERY_OPTIONS, PAYMENT_METHODS } from '@/lib/utils';
-
-const mockCartItems = [
-  {
-    id: '1',
-    name: 'Organic Cotton Sheet Set',
-    size: 'Queen',
-    color: 'White',
-    price: 1250000,
-    quantity: 1,
-    image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400',
-  },
-  {
-    id: '2',
-    name: 'Memory Foam Pillow',
-    size: 'Standard',
-    price: 850000,
-    quantity: 2,
-    image: 'https://images.unsplash.com/photo-1584101557390-d6eec8c4248b?w=400',
-  },
-];
+import { formatCurrency, NIGERIAN_STATES, DELIVERY_OPTIONS, PAYMENT_METHODS } from '@/lib/utils';
+import { useCart } from '@/lib/cart-context';
 
 const steps = [
   { id: 'contact', label: 'Contact', number: 1 },
@@ -37,10 +18,12 @@ const steps = [
   { id: 'confirm', label: 'Confirm', number: 4 },
 ];
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   const router = useRouter();
+  const { cart, totals, isLoading: cartLoading, error: cartError } = useCart();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     // Contact
@@ -59,15 +42,16 @@ export default function CheckoutPage() {
     notes: '',
   });
 
-  const cartItems = mockCartItems;
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryFee = calculateDeliveryFee(subtotal, formData.deliveryOption);
-  const total = subtotal + deliveryFee;
+  const cartItems = cart?.items || [];
+  const subtotal = totals.subtotal;
+  const deliveryFee = totals.deliveryFee;
+  const total = totals.total;
 
   const currentStepId = steps[currentStep].id;
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormError(null);
   };
 
   const handleNext = () => {
@@ -86,13 +70,36 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     setIsSubmitting(true);
-    
-    // Simulate order creation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    router.push('/order/success');
+
+    try {
+      const formDataToSubmit = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        formDataToSubmit.append(key, value);
+      });
+
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        body: formDataToSubmit,
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        if (data.redirectUrl) {
+          router.push(data.redirectUrl);
+        } else {
+          router.push('/order/success');
+        }
+      } else {
+        setFormError(data.error || 'Checkout failed. Please try again.');
+      }
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Checkout failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const progressSteps = steps.map((step, index) => ({
@@ -100,6 +107,31 @@ export default function CheckoutPage() {
     isActive: index <= currentStep,
     isCurrent: index === currentStep,
   }));
+
+  if (cartLoading) {
+    return (
+      <div className="pt-8 pb-16 min-h-screen flex items-center justify-center">
+        <Loader2 className="h-12 w-12 text-primary animate-spin" aria-hidden="true" />
+      </div>
+    );
+  }
+
+  if (cartError || cartItems.length === 0) {
+    return (
+      <div className="pt-8 pb-16 min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <Truck className="h-16 w-16 text-error mx-auto mb-6" aria-hidden="true" />
+          <h1 className="text-2xl font-bold text-text mb-2">Cart is empty</h1>
+          <p className="text-text-muted mb-6">
+            {cartError || 'Your cart is empty. Add some items before checking out.'}
+          </p>
+          <Button variant="primary" onClick={() => router.push('/shop')} className="w-full">
+            Continue Shopping
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-8 pb-16 min-h-screen">
@@ -131,9 +163,9 @@ export default function CheckoutPage() {
                 {index < steps.length - 1 && (
                   <div
                     className={clsx(
-                        'flex-1 h-0.5 mx-4',
-                        step.isActive ? 'bg-primary' : 'bg-border'
-                      )}
+                      'flex-1 h-0.5 mx-4',
+                      step.isActive ? 'bg-primary' : 'bg-border'
+                    )}
                     aria-hidden="true"
                   />
                 )}
@@ -225,7 +257,7 @@ export default function CheckoutPage() {
                     <div className="space-y-3" role="radiogroup" aria-label="Delivery options">
                       {DELIVERY_OPTIONS.map((option) => {
                         const isPOD = option.value === 'PAY_ON_DELIVERY';
-                        const isEligible = !isPOD || (subtotal <= 5000000 && ['Lagos', 'Abuja', 'Port Harcourt'].some(s => formData.state.toLowerCase().includes(s.toLowerCase())));
+                        const isEligible = !isPOD || (subtotal <= 5000000 && ['Lagos', 'Abuja', 'Port Harcourt', 'Rivers'].some(s => formData.state.toLowerCase().includes(s.toLowerCase())));
                         const fee = isPOD ? 150000 : option.fee;
                         const isFree = subtotal >= 5000000 && option.value === 'STANDARD';
                         
@@ -283,7 +315,7 @@ export default function CheckoutPage() {
                   <div className="space-y-3" role="radiogroup" aria-label="Payment methods">
                     {PAYMENT_METHODS.map((method) => {
                       const isPOD = method.value === 'PAY_ON_DELIVERY';
-                      const isEligible = !isPOD || (subtotal <= 5000000 && ['Lagos', 'Abuja', 'Port Harcourt'].some(s => formData.state.toLowerCase().includes(s.toLowerCase())));
+                      const isEligible = !isPOD || (subtotal <= 5000000 && ['Lagos', 'Abuja', 'Port Harcourt', 'Rivers'].some(s => formData.state.toLowerCase().includes(s.toLowerCase())));
                       
                       let icon: React.ReactNode = <CreditCard className="h-5 w-5" />;
                       if (method.value === 'PAYSTACK_TRANSFER') icon = <span className="text-lg">🏦</span>;
@@ -367,6 +399,12 @@ export default function CheckoutPage() {
                       onChange={(e) => handleInputChange('notes', e.target.value)}
                       placeholder="Special delivery instructions, gift message, etc."
                     />
+                    
+                    {formError && (
+                      <div className="p-4 bg-error/10 border border-error/20 rounded-lg text-error text-sm" role="alert">
+                        {formError}
+                      </div>
+                    )}
                   </div>
                 </CheckoutStep>
               )}
@@ -399,18 +437,24 @@ export default function CheckoutPage() {
                 <h2 className="text-lg font-semibold text-text">Order Summary</h2>
 
                 <div className="space-y-3 max-h-60 overflow-y-auto">
-                  {cartItems.map((item) => (
-                    <div key={item.id} className="flex gap-3">
-                      <div className="w-16 h-16 flex-shrink-0 rounded-md overflow-hidden bg-bg-subtle">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  {cartItems.map((item) => {
+                    const price = item.variant.price ?? item.variant.product.price;
+                    const image = item.variant.product.images[0] || '';
+                    const name = item.variant.product.name;
+                    const size = item.variant.size;
+                    return (
+                      <div key={item.id} className="flex gap-3">
+                        <div className="w-16 h-16 flex-shrink-0 rounded-md overflow-hidden bg-bg-subtle">
+                          <img src={image} alt={name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-text truncate">{name}</p>
+                          <p className="text-xs text-text-muted">{size} · Qty: {item.quantity}</p>
+                          <p className="text-sm font-medium text-text">{formatCurrency(price * item.quantity)}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-text truncate">{item.name}</p>
-                        <p className="text-xs text-text-muted">{item.size} · Qty: {item.quantity}</p>
-                        <p className="text-sm font-medium text-text">{formatCurrency(item.price * item.quantity)}</p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="space-y-2 border-t border-border pt-4">
@@ -472,4 +516,8 @@ function ChevronRight({ className }: { className?: string }) {
       <path d="M5 12h14M12 5l7 7-7 7" />
     </svg>
   );
+}
+
+export default function CheckoutPage() {
+  return <CheckoutPageContent />;
 }

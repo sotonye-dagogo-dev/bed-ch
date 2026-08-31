@@ -45,7 +45,7 @@ export function isPODEligible(subtotal: number, state: string): boolean {
   return subtotal <= 5000000 && eligibleStates.some(s => state.toLowerCase().includes(s.toLowerCase()));
 }
 
-export function getDeliveryEstimate(deliveryOption: string, state: string): string {
+export function getDeliveryEstimate(deliveryOption: string, _state: string): string {
   const estimates: Record<string, string> = {
     STANDARD: '3-5 business days',
     EXPRESS_LAGOS: 'Same day (order before 12pm)',
