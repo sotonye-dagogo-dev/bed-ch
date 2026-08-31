@@ -161,6 +161,18 @@ async function main() {
         sortOrder: 9,
       },
     }),
+    prisma.chapter.upsert({
+      where: { slug: 'function' },
+      update: {},
+      create: {
+        name: 'Function',
+        slug: 'function',
+        headline: 'The Functional Bedroom',
+        intro: 'Smart solutions for every bedroom need. Practical accessories that make daily life easier and more organized.',
+        image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200',
+        sortOrder: 10,
+      },
+    }),
   ]);
 
   console.log('✅ Chapters created');

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
 import { CartSlideOut } from '@/components/cart/CartSlideOut';
 import { WhatsAppFloatButton } from '@/components/whatsapp/WhatsAppFloatButton';
+import { CartProvider, useCart } from '@/lib/cart-context';
 
 const categories = [
   { name: 'Bedding', slug: 'bedding', icon: '🛏️' },
@@ -74,30 +75,19 @@ export function Header() {
             >
               Shop
             </Link>
-            <Link
-              href="/shop"
-              className="hidden sm:block px-3 py-2 text-sm font-medium text-text-muted hover:text-text transition-colors relative"
-            >
-              Chapters
-              <span className="absolute -top-1 -right-1 bg-primary text-text-inverse text-xs px-1.5 py-0.5 rounded-full">
-                9
-              </span>
-            </Link>
+<Link
+            href="/shop"
+            className="hidden sm:block px-3 py-2 text-sm font-medium text-text-muted hover:text-text transition-colors relative"
+          >
+            Chapters
+            <span className="absolute -top-1 -right-1 bg-primary text-text-inverse text-xs px-1.5 py-0.5 rounded-full">
+              9
+            </span>
+          </Link>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setCartOpen(true)}
-              aria-label="Open cart"
-              className="relative hidden sm:flex"
-            >
-              <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-              <span className="absolute -top-1 -right-1 bg-primary text-text-inverse text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                0
-              </span>
-            </Button>
+          <CartButton onClick={() => setCartOpen(true)} />
 
-            <a
+          <a
               href="https://wa.me/234XXXXXXXXXX"
               target="_blank"
               rel="noopener noreferrer"
@@ -199,7 +189,9 @@ export function Header() {
         </Sheet>
 
         {/* Cart Slide Out */}
-        <CartSlideOut isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+        <CartProvider>
+          <CartSlideOut isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+        </CartProvider>
       </div>
 
       {/* WhatsApp Float Button */}
@@ -235,5 +227,26 @@ function SearchBar() {
       />
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted" aria-hidden="true" />
     </form>
+  );
+}
+
+function CartButton({ onClick }: { onClick: () => void }) {
+  const { totals } = useCart();
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={onClick}
+      aria-label={`Open cart, ${totals.itemCount} items`}
+      className="relative hidden sm:flex"
+    >
+      <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+      {totals.itemCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-primary text-text-inverse text-xs w-5 h-5 rounded-full flex items-center justify-center">
+          {totals.itemCount > 99 ? '99+' : totals.itemCount}
+        </span>
+      )}
+    </Button>
   );
 }

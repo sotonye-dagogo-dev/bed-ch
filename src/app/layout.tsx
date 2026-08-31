@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { TrustBar } from '@/components/layout/TrustBar';
 import { AnalyticsProviders } from '@/components/analytics/AnalyticsProviders';
+import { CartProvider } from '@/lib/cart-context';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -90,12 +91,14 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-bg text-text">
         <AnalyticsProviders />
-        <Header />
-        <main className="flex-1 pt-16 pb-20 md:pb-0" id="main-content">
-          {children}
-        </main>
-        <Footer />
-        <TrustBar />
+        <CartProvider>
+          <Header />
+          <main className="flex-1 pt-16 pb-20 md:pb-0" id="main-content">
+            {children}
+          </main>
+          <Footer />
+          <TrustBar />
+        </CartProvider>
       </body>
     </html>
   );

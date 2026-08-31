@@ -1,46 +1,41 @@
-import { Metadata } from 'next';
+'use client';
+
 import Link from 'next/link';
-import { ArrowLeft, Plus, Minus, Trash2, ShoppingCart, Truck } from 'lucide-react';
+import { ArrowLeft, Plus, Minus, Trash2, ShoppingCart, Truck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { formatCurrency, calculateDeliveryFee } from '@/lib/utils';
-
-export const metadata: Metadata = {
-  title: 'Your Cart',
-  description: 'Review your cart and proceed to checkout.',
-};
-
-const mockCartItems = [
-  {
-    id: '1',
-    productId: '1',
-    variantId: '1',
-    name: 'Organic Cotton Sheet Set',
-    size: 'Queen',
-    color: 'White',
-    price: 1250000,
-    quantity: 1,
-    image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400',
-    slug: 'organic-cotton-sheet-set',
-  },
-  {
-    id: '2',
-    productId: '4',
-    variantId: '9',
-    name: 'Memory Foam Pillow',
-    size: 'Standard',
-    price: 850000,
-    quantity: 2,
-    image: 'https://images.unsplash.com/photo-1584101557390-d6eec8c4248b?w=400',
-    slug: 'memory-foam-pillow',
-  },
-];
+import { formatCurrency } from '@/lib/utils';
+import { useCart } from '@/lib/cart-context';
 
 export default function CartPage() {
-  const cartItems = mockCartItems;
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryFee = calculateDeliveryFee(subtotal, 'STANDARD');
-  const total = subtotal + deliveryFee;
+  const { cart, totals, isLoading, error, updateQuantity, removeItem, refreshCart } = useCart();
+  const cartItems = cart?.items || [];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto mb-6" aria-hidden="true" />
+          <p className="text-text-muted">Loading cart...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <ShoppingCart className="h-16 w-16 text-error mx-auto mb-6" aria-hidden="true" />
+          <h1 className="text-2xl font-bold text-text mb-2">Error loading cart</h1>
+          <p className="text-text-muted mb-6">{error}</p>
+          <Button variant="primary" onClick={refreshCart} className="w-full">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -59,6 +54,10 @@ export default function CartPage() {
     );
   }
 
+  const subtotal = totals.subtotal;
+  const deliveryFee = totals.deliveryFee;
+  const total = totals.total;
+
   return (
     <div className="pt-8 pb-16">
       <div className="container-custom">
@@ -74,61 +73,16 @@ export default function CartPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2">
-            <h1 className="text-2xl font-bold text-text mb-6">Your Cart ({cartItems.length} items)</h1>
+            <h1 className="text-2xl font-bold text-text mb-6">Your Cart ({totals.itemCount} items)</h1>
 
             <ul className="space-y-4" role="list" aria-label="Cart items">
               {cartItems.map((item) => (
-                <li key={item.id} className="flex gap-4 p-4 bg-bg border border-border rounded-lg">
-                  <div className="relative w-24 h-24 flex-shrink-0 rounded-md overflow-hidden bg-bg-subtle">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      href={`/product/${item.slug}`}
-                      className="font-medium text-text hover:text-primary transition-colors block truncate"
-                    >
-                      {item.name}
-                    </Link>
-                    <div className="flex items-center gap-2 text-sm text-text-muted mt-1">
-                      {item.size && <span>{item.size}</span>}
-                      {item.color && <span>· {item.color}</span>}
-                    </div>
-                    <p className="font-semibold text-text mt-2">{formatCurrency(item.price)}</p>
-                  </div>
-                  <div className="flex flex-col items-end justify-between">
-                    <div className="flex items-center border border-border rounded-md">
-                      <button
-                        className="p-2 text-text-muted hover:text-text hover:bg-bg-subtle transition-colors"
-                        aria-label={`Decrease quantity of ${item.name}`}
-                      >
-                        <Minus className="h-4 w-4" aria-hidden="true" />
-                      </button>
-                      <span className="px-4 text-sm font-medium text-text">{item.quantity}</span>
-                      <button
-                        className="p-2 text-text-muted hover:text-text hover:bg-bg-subtle transition-colors"
-                        aria-label={`Increase quantity of ${item.name}`}
-                      >
-                        <Plus className="h-4 w-4" aria-hidden="true" />
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-4 mt-2">
-                      <span className="font-semibold text-text">
-                        {formatCurrency(item.price * item.quantity)}
-                      </span>
-                      <button
-                        className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded transition-colors"
-                        aria-label={`Remove ${item.name} from cart`}
-                      >
-                        <Trash2 className="h-5 w-5" aria-hidden="true" />
-                      </button>
-                    </div>
-                  </div>
-                </li>
+                <CartPageItem
+                  key={item.id}
+                  item={item}
+                  onUpdateQuantity={updateQuantity}
+                  onRemove={removeItem}
+                />
               ))}
             </ul>
 
@@ -214,5 +168,114 @@ export default function CartPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function CartPageItem({
+  item,
+  onUpdateQuantity,
+  onRemove,
+}: {
+  item: {
+    id: string;
+    variantId: string;
+    quantity: number;
+    variant: {
+      id: string;
+      sku: string;
+      size: string | null;
+      color: string | null;
+      price: number | null;
+      stock: number;
+      product: {
+        id: string;
+        name: string;
+        slug: string;
+        price: number;
+        compareAt: number | null;
+        images: string[];
+      };
+    };
+  };
+  onUpdateQuantity: (cartItemId: string, quantity: number) => Promise<{ success: boolean; error?: string }>;
+  onRemove: (cartItemId: string) => Promise<{ success: boolean; error?: string }>;
+}) {
+  const price = item.variant.price ?? item.variant.product.price;
+  const image = item.variant.product.images[0] || '';
+  const name = item.variant.product.name;
+  const slug = item.variant.product.slug;
+  const size = item.variant.size;
+  const color = item.variant.color;
+
+  const handleQuantityChange = async (newQuantity: number) => {
+    if (newQuantity < 1) {
+      await onRemove(item.id);
+      return;
+    }
+    if (newQuantity > item.variant.stock) {
+      return;
+    }
+    await onUpdateQuantity(item.id, newQuantity);
+  };
+
+  return (
+    <li className="flex gap-4 p-4 bg-bg border border-border rounded-lg">
+      <div className="relative w-24 h-24 flex-shrink-0 rounded-md overflow-hidden bg-bg-subtle">
+        <img
+          src={image}
+          alt={name}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+      <div className="flex-1 min-w-0">
+        <Link
+          href={`/product/${slug}`}
+          className="font-medium text-text hover:text-primary transition-colors block truncate"
+        >
+          {name}
+        </Link>
+        <div className="flex items-center gap-2 text-sm text-text-muted mt-1">
+          {size && <span>{size}</span>}
+          {color && <span>· {color}</span>}
+        </div>
+        <p className="font-semibold text-text mt-2">{formatCurrency(price)}</p>
+      </div>
+      <div className="flex flex-col items-end justify-between">
+        <div className="flex items-center border border-border rounded-md">
+          <button
+            className="p-2 text-text-muted hover:text-text hover:bg-bg-subtle transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label={`Decrease quantity of ${name}`}
+            onClick={() => handleQuantityChange(item.quantity - 1)}
+            disabled={item.quantity <= 1}
+          >
+            <Minus className="h-4 w-4" aria-hidden="true" />
+          </button>
+          <span className="px-4 text-sm font-medium text-text min-w-[2rem] text-center">
+            {item.quantity}
+          </span>
+          <button
+            className="p-2 text-text-muted hover:text-text hover:bg-bg-subtle transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label={`Increase quantity of ${name}`}
+            onClick={() => handleQuantityChange(item.quantity + 1)}
+            disabled={item.quantity >= item.variant.stock}
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="flex items-center gap-4 mt-2">
+          <span className="font-semibold text-text">
+            {formatCurrency(price * item.quantity)}
+          </span>
+          <button
+            className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label={`Remove ${name} from cart`}
+            onClick={() => onRemove(item.id)}
+          >
+            <Trash2 className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    </li>
   );
 }
