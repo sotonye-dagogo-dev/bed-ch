@@ -2,66 +2,67 @@
 
 > **Metadata**
 >
-> - last-updated-by: bootstrap-project
-> - last-synced: 2026-08-29
+> - last-updated-by: update-ai-system
+> - last-synced: 2026-08-30
 > - staleness-policy: update after every session; re-prioritize weekly
 
 > **Overview:** Immediate actionable tasks. Pull from here for `dev-cycle.md` or `execute-feature.md`. Format: `[TAG] Task description — context/acceptance`
 
 ---
 
-## 🔥 Immediate (Next Session) — Foundation
+## 🔥 Immediate (Next Session) — Foundation ✅ COMPLETE
 
 | Task | Complexity | Context / Acceptance Criteria |
 |------|------------|-------------------------------|
-| `[XL] Initialize Next.js 14 project with TypeScript, Tailwind, Prisma` | XL | `npx create-next-app@latest bed-ch --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --use-npm` → add Prisma, configure |
-| `[L] Configure Tailwind with design tokens from design-system.md` | L | Colors, typography, spacing, radius, shadows as CSS variables + Tailwind theme.extend |
-| `[L] Create Prisma schema (products, categories, chapters, cart, orders)` | L | Match system-architecture.md exactly; run `prisma db push` and `prisma generate` |
-| `[M] Create seed script with 9 chapters, 8 categories, 12 sample products` | M | Categories: Bedding, Pillows, Rugs, Curtains, Lighting, Storage, Nightwear, Function; Chapters per brief |
-| `[M] Build UI primitives: Button, Input, Select, Card, Badge, Sheet, Skeleton` | M | Follow design-system.md specs; export from `@/components/ui` |
-| `[M] Build layout components: Header, Footer, TrustBar, SearchBar, MobileMenu` | M | Header: sticky, logo, search, cart, WhatsApp; TrustBar: 3 badges fixed bottom mobile |
-| `[S] Add analytics providers: GA4, Meta Pixel, Hotjar (test IDs)` | S | Providers in `@/components/analytics`, load via next/script in root layout |
-| `[S] Add WhatsApp floating button with pre-filled message` | S | "Chat to order" button, pulse animation, tooltip desktop, 24px from edge |
-| `[S] Set up .env.example with all required variables` | S | DATABASE_URL, PAYSTACK_*, WHATSAPP_NUMBER, GA4_ID, META_PIXEL_ID, HOTJAR_ID, APP_URL |
-| `[S] Configure ESLint, Prettier, TypeScript strict mode` | S | `npm run lint`, `npm run typecheck` pass |
+| `[x] [XL] Initialize Next.js 14 project with TypeScript, Tailwind, Prisma` | XL | `npx create-next-app@latest bed-ch --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --use-npm` → add Prisma, configure |
+| `[x] [L] Configure Tailwind with design tokens from design-system.md` | L | Colors, typography, spacing, radius, shadows as CSS variables + Tailwind theme.extend |
+| `[x] [L] Create Prisma schema (products, categories, chapters, cart, orders)` | L | Match system-architecture.md exactly; run `prisma db push` and `prisma generate` |
+| `[x] [M] Create seed script with 9 chapters, 8 categories, 12 sample products` | M | Categories: Bedding, Pillows, Rugs, Curtains, Lighting, Storage, Nightwear, Function; Chapters per brief |
+| `[x] [M] Build UI primitives: Button, Input, Select, Card, Badge, Sheet, Skeleton` | M | Follow design-system.md specs; export from `@/components/ui` |
+| `[x] [M] Build layout components: Header, Footer, TrustBar, SearchBar, MobileMenu` | M | Header: sticky, logo, search, cart, WhatsApp; TrustBar: 3 badges fixed bottom mobile |
+| `[x] [S] Add analytics providers: GA4, Meta Pixel, Hotjar (test IDs)` | S | Providers in `@/components/analytics`, load via next/script in root layout |
+| `[x] [S] Add WhatsApp floating button with pre-filled message` | S | "Chat to order" button, pulse animation, tooltip desktop, 24px from edge |
+| `[x] [S] Set up .env.example with all required variables` | S | DATABASE_URL, PAYSTACK_*, WHATSAPP_NUMBER, GA4_ID, META_PIXEL_ID, HOTJAR_ID, APP_URL |
+| `[x] [S] Configure ESLint, Prettier, TypeScript strict mode` | S | `npm run lint`, `npm run typecheck` pass |
+| `[ ] [M] Set up GitHub Actions CI/CD pipeline` | M | Lint, typecheck, test, build, deploy to Vercel |
 
 ---
 
-## 📦 Phase 1: Core Catalog
+## 📦 Phase 1: Core Catalog ✅ UI COMPLETE (Mock Data)
 
 | Task | Complexity | Context / Acceptance Criteria |
 |------|------------|-------------------------------|
-| `[L] Implement product queries (list, get, search, by-category, by-chapter)` | L | `@/lib/db/products.ts` with caching (ISR 1hr), proper TypeScript types |
-| `[L] Implement category & chapter queries` | L | `@/lib/db/categories.ts`, `@/lib/db/chapters.ts` |
-| `[L] Build Homepage: Hero + Search + Two-Path + Bestsellers + Chapter Teaser` | L | Server component, `getBestsellers(8-12)`, `getActiveChapters(9)`, responsive grid |
-| `[L] Build Shop Page: Sidebar filters + ProductGrid + Pagination` | L | URL-based filters (category, price, size, color, chapter), 2/3/4/5 col grid |
-| `[L] Build Product Detail Page: Gallery, SizeSelector, AddToCart, CompleteTheLook` | L | Server component for product, client components for interactions |
-| `[M] Build Category Pages (dynamic routes)` | M | `/shop/[category]` reuses shop components with pre-filter |
-| `[M] Configure Next.js Image optimization (CDN, blur placeholders, sizes)` | M | `next.config.js` remotePatterns, product image component with priority/lazy |
-| `[M] Add SEO: meta tags, Open Graph, product schema, sitemap.xml, robots.txt` | M | `next-sitemap` or custom, JSON-LD Product schema on product pages |
+| `[~] [L] Implement product queries (list, get, search, by-category, by-chapter)` | L | `@/lib/db/products.ts` with caching (ISR 1hr), proper TypeScript types — **Currently mock data** |
+| `[~] [L] Implement category & chapter queries` | L | `@/lib/db/categories.ts`, `@/lib/db/chapters.ts` — **Currently mock data** |
+| `[x] [L] Build Homepage: Hero + Search + Two-Path + Bestsellers + Chapter Teaser` | L | Server component, `getBestsellers(8-12)`, `getActiveChapters(9)`, responsive grid |
+| `[x] [L] Build Shop Page: Sidebar filters + ProductGrid + Pagination` | L | URL-based filters (category, price, size, color, chapter), 2/3/4/5 col grid |
+| `[x] [L] Build Product Detail Page: Gallery, SizeSelector, AddToCart, CompleteTheLook` | L | Server component for product, client components for interactions |
+| `[x] [M] Build Category Pages (dynamic routes)` | M | `/shop/[category]` reuses shop components with pre-filter |
+| `[x] [M] Configure Next.js Image optimization (CDN, blur placeholders, sizes)` | M | `next.config.js` remotePatterns, product image component with priority/lazy |
+| `[x] [M] Add SEO: meta tags, Open Graph, product schema, sitemap.xml, robots.txt` | M | `next-sitemap` or custom, JSON-LD Product schema on product pages — **sitemap/robots pending** |
 
 ---
 
-## 📚 Phase 2: Chapters & Discovery
+## 📚 Phase 2: Chapters & Discovery ✅ UI COMPLETE (Mock Data)
 
 | Task | Complexity | Context / Acceptance Criteria |
 |------|------------|-------------------------------|
-| `[M] Build Chapter Page template: Hero + Curated Grid + BundleOffer` | M | `/chapter/[slug]`, `getChapterBySlug`, `getProductsByChapter(12-20)`, bundle CTA |
-| `[S] Add chapter navigation: Homepage teaser (9 cards), Shop sidebar filter` | S | ChapterCard component, ChapterGrid 3x3 mobile / horizontal scroll desktop |
-| `[S] Implement bundle offer: display discounted price, add-bundle-to-cart` | S | BundleOffer component, adds multiple CartItems at once |
+| `[~] [M] Build Chapter Page template: Hero + Curated Grid + BundleOffer` | M | `/chapter/[slug]`, `getChapterBySlug`, `getProductsByChapter(12-20)`, bundle CTA — **Mock data** |
+| `[x] [S] Add chapter navigation: Homepage teaser (9 cards), Shop sidebar filter` | S | ChapterCard component, ChapterGrid 3x3 mobile / horizontal scroll desktop |
+| `[x] [S] Implement bundle offer: display discounted price, add-bundle-to-cart` | S | BundleOffer component, adds multiple CartItems at once (mock navigation) |
 
 ---
 
-## 🛒 Phase 3: Cart & Checkout
+## 🛒 Phase 3: Cart & Checkout 🔄 UI COMPLETE, BACKEND PENDING
 
 | Task | Complexity | Context / Acceptance Criteria |
 |------|------------|-------------------------------|
-| `[L] Implement cart queries (get, add, update, remove, clear) + session cookie` | L | Anonymous cart via `sessionId` cookie (1yr), Prisma Cart + CartItem models |
-| `[L] Build CartSlideOut: Slide-out sheet, CartItem list, CartSummary, Checkout CTA` | L | Framer Motion or CSS animation, sticky header/footer, portal to body |
-| `[L] Build Checkout Page: Multi-step form (Contact → Delivery → Payment → Confirm)` | L | React Hook Form + Zod, progress indicator, server action on submit |
-| `[M] Implement delivery options: Standard, Express Lagos, POD (conditional)` | M | POD only for Lagos/Abuja/PH ≤₦50k, show escrow note, calculate fees |
-| `[M] Implement payment methods: Paystack (card/transfer/USSD) + POD radio` | M | Paystack inline embed for card, redirect for transfer/USSD, POD creates order directly |
-| `[S] Create Order on checkout submit (PENDING status, clear cart)` | S | Server action: create Order + OrderItems, generate orderNumber (BC-YYYY-NNNN) |
+| `[ ] [L] Implement cart queries (get, add, update, remove, clear) + session cookie` | L | Anonymous cart via `sessionId` cookie (1yr), Prisma Cart + CartItem models |
+| `[x] [L] Build CartSlideOut: Slide-out sheet, CartItem list, CartSummary, Checkout CTA` | L | Framer Motion animation, sticky header/footer, portal to body |
+| `[x] [L] Build Checkout Page: Multi-step form (Contact → Delivery → Payment → Confirm)` | L | React Hook Form + Zod (client-side only), progress indicator, mock submit |
+| `[x] [M] Implement delivery options: Standard, Express Lagos, POD (conditional)` | M | POD only for Lagos/Abuja/PH ≤₦50k, show escrow note, calculate fees |
+| `[x] [M] Implement payment methods: Paystack (card/transfer/USSD) + POD radio` | M | Paystack inline embed for card, redirect for transfer/USSD, POD creates order directly (UI only) |
+| `[ ] [S] Create Order on checkout submit (PENDING status, clear cart)` | S | Server action: create Order + OrderItems, generate orderNumber (BC-YYYY-NNNN) |
 
 ---
 
@@ -143,8 +144,7 @@
 
 ## Current Sprint Focus
 
-**Sprint 0 (Foundation):** Tasks 1-10 (Immediate)
-**Sprint 1 (Catalog):** Tasks 11-18 (Core Catalog)
-**Sprint 2 (Chapters + Cart):** Tasks 19-27
-**Sprint 3 (Checkout + Payments):** Tasks 28-38
-**Sprint 4 (Polish + Launch):** Tasks 39-49
+**Sprint 0 (Foundation):** ✅ COMPLETE — All UI tasks done, CI/CD pending
+**Sprint 1 (Backend Integration):** 🔄 NEXT — Replace mock data with real Prisma queries, implement cart/checkout backend, add Paystack
+**Sprint 2 (Payments):** ❌ PENDING — Paystack integration, POD flow, webhooks
+**Sprint 3 (Polish + Launch):** ❌ PENDING — Accessibility, performance, content, deployment

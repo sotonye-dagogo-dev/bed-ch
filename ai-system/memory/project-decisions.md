@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: bootstrap-project
-> - last-verified-against-code: 2026-08-29
+> - last-updated-by: update-ai-system
+> - last-verified-against-code: 2026-08-30
 > - staleness-policy: append-only; never delete, only supersede with new entry linking back
 
 > **Overview:** Explicit decisions with rationale. Each entry: Decision, Context, Alternatives Considered, Consequences, Supersedes.

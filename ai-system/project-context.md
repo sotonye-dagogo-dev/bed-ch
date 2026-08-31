@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: bootstrap-project
-> - last-verified-against-code: 2026-08-29
+> - last-updated-by: update-ai-system
+> - last-verified-against-code: 2026-08-30
 > - staleness-policy: re-verify if >10 sessions old or after major scope changes
 
 > **Overview:** Why this project exists, who it serves, and what constraints govern development. Agents should read this to understand the "why" behind the work.

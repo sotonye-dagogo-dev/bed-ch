@@ -2,10 +2,10 @@
 
 > **Metadata**
 >
-> - last-updated-by: bootstrap-project
-> - last-verified-against-code: 2026-08-29
+> - last-updated-by: update-ai-system
+> - last-verified-against-code: 2026-08-30
 > - staleness-policy: re-verify if folder structure changes
-
+>
 > **Overview:** Folder structure with purpose of each directory. Auto-regenerable via script.
 
 ---
@@ -106,7 +106,6 @@ ai-system/
 ├── tools/                     # External resource registry
 │   ├── integrations/          # Tool-specific documentation
 │   └── registry.md            # Tool catalog
-├── commands/                  # (duplicate entry - see above)
 └── artifacts/                 # Client-provided references
     ├── placeholder.txt
     └── Bedroom Chapters (1).pdf
@@ -119,48 +118,20 @@ ai-system/
 ```
 src/
 ├── app/                       # Next.js App Router pages
-│   ├── (site)/                # Static/marketing route group
-│   │   ├── layout.tsx         # Site layout (header, footer, trust bar)
-│   │   ├── page.tsx           # Homepage
-│   │   ├── about/page.tsx     # About page
-│   │   ├── delivery-returns/page.tsx
-│   │   ├── contact/page.tsx
-│   │   ├── journal/
-│   │   │   ├── page.tsx       # Journal index (blog listing)
-│   │   │   └── [slug]/page.tsx# Article detail
-│   │   └── globals.css        # Global styles + CSS variables
-│   ├── (shop)/                # E-commerce route group
-│   │   ├── layout.tsx         # Shop layout (with sidebar on desktop)
-│   │   ├── page.tsx           # Redirect to /shop
-│   │   ├── shop/
-│   │   │   ├── page.tsx       # Shop listing with filters
-│   │   │   └── [category]/page.tsx
-│   │   ├── product/
-│   │   │   └── [id]/page.tsx  # Product detail
-│   │   ├── chapter/
-│   │   │   └── [slug]/page.tsx# Chapter page
-│   │   ├── cart/
-│   │   │   └── page.tsx       # Cart (also slide-out via component)
-│   │   └── checkout/
-│   │       └── page.tsx       # Multi-step checkout
-│   ├── (admin)/               # Admin route group (future)
-│   │   └── layout.tsx
-│   ├── api/                   # API Routes & Server Actions
-│   │   ├── cart/
-│   │   │   └── route.ts       # GET/POST cart operations
-│   │   ├── checkout/
-│   │   │   └── route.ts       # POST create order
-│   │   ├── payments/
-│   │   │   ├── initialize/route.ts
-│   │   │   ├── verify/route.ts
-│   │   │   └── webhook/route.ts # Paystack webhook
-│   │   ├── products/
-│   │   │   └── route.ts       # Product search/filter API
-│   │   └── webhooks/
-│   │       └── paystack/route.ts
-│   ├── layout.tsx             # Root layout (providers, fonts)
-│   ├── page.tsx               # Root redirect to homepage
-│   └── not-found.tsx          # 404 page
+│   ├── globals.css            # Global styles + CSS variables
+│   ├── layout.tsx             # Root layout (providers, fonts, header, footer, trust bar)
+│   ├── page.tsx               # Homepage (hero, search, bestsellers, chapter teaser)
+│   ├── shop/
+│   │   └── page.tsx           # Shop listing with filters, product grid, pagination
+│   ├── product/
+│   │   └── [id]/page.tsx      # Product detail (gallery, variants, add-to-cart, complete the look)
+│   ├── chapter/
+│   │   └── [slug]/page.tsx    # Chapter page (hero, curated products, bundle offer)
+│   ├── cart/
+│   │   └── page.tsx           # Full-page cart (also accessible via slide-out)
+│   ├── checkout/
+│   │   └── page.tsx           # Multi-step checkout (contact → delivery → payment → confirm)
+│   └── not-found.tsx          # 404 page (not yet created)
 ├── components/                # React components
 │   ├── ui/                    # Primitive UI components
 │   │   ├── Button.tsx
@@ -168,85 +139,38 @@ src/
 │   │   ├── Select.tsx
 │   │   ├── Badge.tsx
 │   │   ├── Card.tsx
-│   │   ├── Checkbox.tsx
-│   │   ├── RadioGroup.tsx
-│   │   ├── Stepper.tsx
-│   │   ├── Toast.tsx
-│   │   ├── Modal.tsx
-│   │   ├── Sheet.tsx          # Slide-out panels (cart, mobile menu)
-│   │   ├── Tooltip.tsx
-│   │   ├── Avatar.tsx
-│   │   ├── Spinner.tsx
+│   │   ├── Sheet.tsx          # Slide-out panels (cart, mobile menu, filters)
 │   │   ├── Skeleton.tsx       # Loading placeholders
 │   │   └── index.ts           # Barrel export
 │   ├── layout/                # Layout components
-│   │   ├── Header.tsx
-│   │   ├── Footer.tsx
-│   │   ├── TrustBar.tsx
-│   │   ├── MobileMenu.tsx
-│   │   ├── SearchBar.tsx
-│   │   └── CartIcon.tsx
+│   │   ├── Header.tsx         # Sticky header with logo, search, cart, WhatsApp, mobile menu
+│   │   ├── Footer.tsx         # Footer with links, trust badges, WhatsApp CTA, social
+│   │   ├── TrustBar.tsx       # Fixed bottom mobile: Same-Day, POD, Returns
+│   │   └── index.ts           # Barrel export
 │   ├── product/               # Product-specific components
-│   │   ├── ProductCard.tsx
-│   │   ├── ProductGrid.tsx
-│   │   ├── ProductImages.tsx
-│   │   ├── SizeSelector.tsx
-│   │   ├── QuantityStepper.tsx
-│   │   ├── AddToCartButton.tsx
-│   │   ├── CompleteTheLook.tsx
-│   │   ├── DeliveryEstimate.tsx
-│   │   └── Reviews.tsx
+│   │   ├── ProductGrid.tsx    # Responsive grid of ProductCard
+│   │   ├── FilterSidebar.tsx  # Collapsible filters (category, price, size, color, chapter)
+│   │   └── index.ts           # Barrel export
 │   ├── cart/                  # Cart & checkout components
-│   │   ├── CartSlideOut.tsx
-│   │   ├── CartItem.tsx
-│   │   ├── CartSummary.tsx
-│   │   ├── CheckoutForm.tsx
-│   │   ├── DeliveryOptions.tsx
-│   │   ├── PaymentMethods.tsx
-│   │   └── OrderSummary.tsx
-│   ├── chapter/               # Chapter-specific components
-│   │   ├── ChapterCard.tsx
-│   │   ├── ChapterGrid.tsx
-│   │   ├── ChapterHero.tsx
-│   │   └── BundleOffer.tsx
+│   │   └── CartSlideOut.tsx   # Slide-out cart with items, summary, checkout CTA
 │   ├── whatsapp/              # WhatsApp integration
-│   │   └── WhatsAppFloatButton.tsx
+│   │   └── WhatsAppFloatButton.tsx  # Floating chat button with pulse + tooltip
 │   ├── analytics/             # Analytics providers
-│   │   ├── GA4Provider.tsx
-│   │   ├── MetaPixelProvider.tsx
-│   │   └── HotjarProvider.tsx
-│   └── providers/             # Context providers
-│       ├── CartProvider.tsx
-│       └── ThemeProvider.tsx  # (if dark mode added later)
+│   │   ├── GA4.tsx
+│   │   ├── MetaPixel.tsx
+│   │   ├── Hotjar.tsx
+│   │   ├── AnalyticsProviders.tsx  # Conditional provider wrapper
+│   │   └── index.ts           # Barrel export
 ├── lib/                       # Core utilities & data access
 │   ├── prisma.ts              # Prisma client singleton
-│   ├── db/                    # Database queries
-│   │   ├── products.ts
-│   │   ├── chapters.ts
-│   │   ├── categories.ts
-│   │   ├── cart.ts
-│   │   └── orders.ts
-│   ├── paystack.ts            # Paystack client & helpers
-│   ├── whatsapp.ts            # WhatsApp URL generation
-│   ├── analytics.ts           # Event tracking helpers
-│   ├── utils.ts               # Formatters, validators, helpers
-│   ├── constants.ts           # App constants (currency, limits)
-│   ├── validations.ts         # Zod schemas for forms/API
-│   └── server-actions.ts      # Server Actions (if used)
-├── hooks/                     # Custom React hooks
-│   ├── useCart.ts
-│   ├── useDebounce.ts
-│   ├── useLocalStorage.ts
-│   └── useMediaQuery.ts
-├── types/                     # TypeScript types
-│   ├── product.ts
-│   ├── cart.ts
-│   ├── order.ts
-│   ├── chapter.ts
-│   └── api.ts
-├── styles/                    # Additional styles
-│   └── globals.css            # (duplicate - see app/globals.css)
-└── middleware.ts              # Next.js middleware (auth, redirects, i18n)
+│   ├── db/                    # Database queries (currently using mock data)
+│   │   ├── products.ts        # Product queries (list, get, search, by-category, by-chapter)
+│   │   ├── chapters.ts        # Chapter queries (list, get, products-by-chapter)
+│   │   └── categories.ts      # Category queries (list, get)
+│   ├── utils.ts               # Formatters (currency, slugify), validators, constants
+│   └── index.ts               # Barrel export
+├── hooks/                     # Custom React hooks (not yet created)
+└── types/                     # TypeScript types (not yet created - using inline interfaces)
 ```
 
 ---
@@ -255,10 +179,9 @@ src/
 
 ```
 prisma/
-├── schema.prisma              # Database schema (see system-architecture.md)
-├── migrations/                # Migration history
-│   └── 20260829_init/         # Initial migration
-└── seed.ts                    # Seed script for development data
+├── schema.prisma              # Database schema (matches system-architecture.md)
+├── migrations/                # Migration history (not yet created)
+└── seed.ts                    # Seed script with 9 chapters, 8 categories, 12 products, variants, bundles
 ```
 
 ---
@@ -267,16 +190,12 @@ prisma/
 
 ```
 public/
-├── images/
-│   ├── products/              # Product images (or served from CDN)
-│   ├── chapters/              # Chapter hero images
-│   ├── heroes/                # Homepage hero images
-│   └── placeholders/          # Blur placeholders, fallback images
-├── icons/                     # Favicon, PWA icons
-├── fonts/                     # Local fonts (Inter variable)
-├── robots.txt
-├── sitemap.xml                # Auto-generated
-└── manifest.json              # PWA manifest
+├── images/                    # (empty - using Unsplash URLs for now)
+├── icons/                     # (empty - favicon, PWA icons not yet added)
+├── fonts/                     # (empty - using Google Fonts)
+├── robots.txt                 # (not yet created)
+├── sitemap.xml                # (not yet created - will be auto-generated)
+└── manifest.json              # (not yet created - PWA manifest)
 ```
 
 ---
@@ -285,14 +204,14 @@ public/
 
 | File | Purpose |
 |------|---------|
-| `package.json` | Dependencies, scripts (dev, build, start, lint, test, db:push, db:studio) |
-| `tailwind.config.ts` | Design tokens, theme extension, plugins |
-| `tsconfig.json` | TypeScript config (strict, path aliases @/*, @/components/*) |
-| `next.config.js` | Next.js config (images, headers, rewrites, env) |
+| `package.json` | Dependencies, scripts (dev, build, start, lint, typecheck, prisma:generate, prisma:push, prisma:studio, db:seed) |
+| `tailwind.config.ts` | Design tokens, theme extension (colors, fonts, spacing, radius, shadows, transitions) |
+| `tsconfig.json` | TypeScript config (strict, path aliases @/*) |
+| `next.config.js` | Next.js config (images remotePatterns, optimizePackageImports) |
 | `.env.example` | Template for required environment variables |
 | `postcss.config.js` | PostCSS plugins (Tailwind, Autoprefixer) |
-| `eslint.config.js` | ESLint config (Next.js, TypeScript, Tailwind) |
-| `prettier.config.js` | Prettier config |
+| `.eslintrc.json` | ESLint config (Next.js, TypeScript) |
+| `.prettierrc` | Prettier config |
 | `.gitignore` | Ignored files (node_modules, .env, .next, dist, *.log) |
 
 ---
@@ -306,6 +225,6 @@ public/
 | Start | `npm run start` | `next start` — Production server |
 | Lint | `npm run lint` | `next lint` — ESLint |
 | Type Check | `npm run typecheck` | `tsc --noEmit` |
-| DB Push | `npm run db:push` | `prisma db push` — Schema to DB |
-| DB Studio | `npm run db:studio` | `prisma studio` — Visual DB editor |
+| DB Push | `npm run prisma:push` | `prisma db push` — Schema to DB |
+| DB Studio | `npm run prisma:studio` | `prisma studio` — Visual DB editor |
 | Seed | `npm run db:seed` | `tsx prisma/seed.ts` — Seed data |
