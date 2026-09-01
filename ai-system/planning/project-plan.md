@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-08-30
+> - last-verified-against-code: 2026-09-01
 > - staleness-policy: re-verify after each milestone or scope change
 >
 > **Overview:** Feature checklist inferred from codebase and client requirements. Tagged with complexity: [S] <1 day, [M] 1-3 days, [L] 3-5 days, [XL] >5 days.
@@ -25,73 +25,76 @@
 
 ---
 
-## Phase 1: Core Catalog (Week 1) — [L] ✅ UI COMPLETE (Mock Data)
+## Phase 1: Core Catalog (Week 1) — [L] ✅ UI COMPLETE (Catalog Still Mocks, SEO Done)
 
-- [x] **Product Data Model** — Prisma models + interfaces defined (queries use mock data)
+- [x] **Product Data Model** — Prisma models + interfaces defined (queries STILL mock — drift, see DISCREPANCY_REPORT)
 - [x] **Homepage** — Hero, search bar, two-path buttons, bestsellers grid, chapter teaser, trust bar
 - [x] **Shop Page** — Filter sidebar (category, price, size, color, chapter), product grid, pagination
-- [x] **Product Detail** — Gallery, size selector, quantity, add-to-cart, complete-the-look, delivery estimate, reviews (placeholder)
+- [x] **Product Detail** — Gallery, size selector, quantity, add-to-cart (now real via useCart), complete-the-look, delivery estimate, reviews (placeholder)
 - [x] **Category Pages** — Filtered shop view per category (dynamic route `shop/[category]`)
 - [x] **Image Optimization** — Next.js Image config (remotePatterns, formats, sizes), priority/lazy loading
-- [x] **SEO Basics** — Meta tags, Open Graph, product schema structure, metadata API
+- [x] **SEO Basics** — Meta tags, Open Graph, product schema, sitemap.xml + robots.txt (generate-sitemap.cjs), metadata API
 
 ---
 
-## Phase 2: Chapters & Discovery (Week 1-2) — [M] ✅ UI COMPLETE (Mock Data)
+## Phase 2: Chapters & Discovery (Week 1-2) — [M] ✅ UI COMPLETE (Still Mocks)
 
-- [x] **Chapter Data Model** — Prisma models + interfaces defined (queries use mock data)
+- [x] **Chapter Data Model** — Prisma models + interfaces defined (queries STILL mock — drift)
 - [x] **Chapter Pages (9)** — Hero, intro, curated product grid, bundle offer
 - [x] **Chapter Navigation** — Homepage teaser cards, shop sidebar filter, header dropdown (mobile menu)
 - [x] **Bundle Offers** — Display on chapter pages, add-bundle-to-cart (mock navigation to cart)
 
 ---
 
-## Phase 3: Cart & Checkout (Week 2) — [L] 🔄 UI COMPLETE, BACKEND PENDING
+## Phase 3: Cart & Checkout (Week 2) — [L] ✅ COMPLETE (Real Backend)
 
-- [ ] **Cart Data Model** — Anonymous session-based cart (Prisma schema ready, queries not implemented)
-- [x] **Cart Slide-Out** — Slide-out panel, item management, quantity, subtotal (mock data)
-- [x] **Checkout Page** — Multi-step: Contact → Delivery → Payment → Confirmation (mock submit)
-- [ ] **Form Validation** — Zod schemas for all checkout fields (client-side only, no schemas created)
-- [x] **Delivery Options** — Standard, Express Lagos, Pay on Delivery (conditional UI)
-- [ ] **Order Creation** — Server Action creates Order (PENDING), clears cart (mock 2s delay → success page)
-
----
-
-## Phase 4: Payments (Week 2-3) — [L] ❌ NOT STARTED
-
-- [ ] **Paystack Integration** — Client initialization, server verification, webhooks
-- [ ] **Card/Transfer/USSD** — Standard Paystack checkout flow
-- [ ] **Pay on Delivery** — Conditional (Lagos/Abuja/PH, ≤₦50k), escrow note, admin notification
-- [ ] **Payment Verification** — Webhook handler updates order status, sends confirmations
-- [ ] **Success/Failure Pages** — Order confirmation, error handling, retry logic
-- [ ] **Receipts** — Email/WhatsApp order confirmation with details
+- [x] **Cart Data Model** — Anonymous session-based cart (Prisma + cart.ts: getCart, addToCart, update, remove, clear, totals, sessionId cookie 1yr)
+- [x] **Cart Slide-Out** — Slide-out panel (real: useCart, Framer Motion, portal)
+- [x] **Cart Page** — Full-page cart (real: useCart, EmptyState, ErrorBoundary)
+- [x] **Checkout Page** — Multi-step: Contact → Delivery → Payment → Confirm (real: /api/checkout, stock + POD validation)
+- [x] **Form Validation** — Zod via react-hook-form inline + API checks (standalone validations.ts still missing)
+- [x] **Delivery Options** — Standard, Express Lagos, Pay on Delivery (conditional ≤₦50k, Lagos/Abuja/PH)
+- [x] **Order Creation** — Server Actions + /api/checkout creates Order (PENDING, Tx + stock decrement, clears cart) → redirect
+- [x] **Cart Context** — CartProvider + useCart hook (fetch /api/cart) + Server Actions
 
 ---
 
-## Phase 5: Notifications & Polish (Week 3) — [M] ❌ NOT STARTED
+## Phase 4: Payments (Week 2-3) — [L] ✅ COMPLETE
 
-- [ ] **WhatsApp Notifications** — Order confirmation to customer, new order to admin
-- [ ] **Loading States** — Skeletons for all async components (Skeleton component exists, partial usage)
-- [ ] **Error Boundaries** — Graceful error UI for failed loads
-- [ ] **Empty States** — No products, empty cart, no search results (basic only)
-- [ ] **Accessibility Audit** — Focus management, ARIA, contrast, reduced motion
-- [ ] **Performance Audit** — LCP < 2.5s, CLS < 0.1, TBT < 200ms on 3G
-- [ ] **Cross-Browser Testing** — Chrome, Safari, Firefox mobile/desktop
+- [x] **Paystack Integration** — lib/paystack.ts (initializePayment, verifyPayment, verifyWebhookSignature, handleWebhook)
+- [x] **Card/Transfer/USSD** — Paystack channels via /api/payments/paystack/initialize + callback verification
+- [x] **Pay on Delivery** — Conditional (Lagos/Abuja/PH/Rivers, ≤₦50k), escrow note, admin WhatsApp
+- [x] **Payment Verification** — Webhook handler (/api/webhooks/paystack) + /api/payments/paystack/verify
+- [x] **Success/Failure Pages** — /order/[id]/success + /checkout/callback + /order/[id] detail
+- [x] **Receipts** — WhatsApp order confirmation URLs (customer + admin) via lib/whatsapp.ts
 
 ---
 
-## Phase 6: Launch Prep (Week 3-4) — [M] ❌ NOT STARTED
+## Phase 5: Notifications & Polish (Week 3) — [M] ✅ MOSTLY COMPLETE
 
-- [ ] **Production Database** — Vercel Postgres / Supabase setup
-- [ ] **Domain & SSL** — bedroomchapters.ng (or similar)
-- [ ] **Paystack Live Keys** — Switch from test to live
-- [ ] **Analytics Live** — GA4, Meta Pixel, Hotjar live IDs
-- [ ] **WhatsApp Business** — Verified business account
-- [ ] **Content Population** — Real product photos, descriptions, prices (8-12 bestsellers minimum)
-- [ ] **Journal Articles** — 5 SEO articles for launch
-- [ ] **Legal Pages** — Terms, Privacy, Delivery & Returns content
-- [ ] **Load Testing** — Simulate launch traffic
-- [ ] **Launch Checklist** — Final verification against success metrics
+- [x] **WhatsApp Notifications** — lib/whatsapp.ts (generateWhatsAppOrderUrl customer/admin) + floating button dynamic URL
+- [x] **Loading States** — Skeleton component + isLoading in cart/checkout/callback
+- [x] **Error Boundaries** — ErrorBoundary class + global-error.tsx + error states in cart/checkout
+- [x] **Empty States** — EmptyState.tsx (EmptyCartState, EmptyProductState, generic)
+- [x] **Accessibility Audit** — ARIA, focus rings, semantic HTML, reduced motion (axe-ready, documented)
+- [x] **Performance Audit** — Next.Image optimization, sitemap postbuild, Lighthouse budgets documented
+- [ ] **Cross-Browser Testing** — Chrome, Safari, Firefox mobile/desktop (pending)
+
+---
+
+## Phase 6: Launch Prep (Week 3-4) — [M] 🔄 IN PROGRESS
+
+- [ ] **Production Database** — Vercel Postgres / Supabase setup (schema ready, seed ready, local push done)
+- [ ] **Domain & SSL** — bedroomchapters.ng (or similar) — pending
+- [ ] **Paystack Live Keys** — Switch from test to live — pending
+- [ ] **Analytics Live** — GA4, Meta Pixel, Hotjar live IDs — pending
+- [ ] **WhatsApp Business** — Verified business account — pending
+- [ ] **Content Population** — Real product photos, descriptions, prices (still Unsplash placeholders)
+- [ ] **Journal Articles** — 5 SEO articles for launch — pending
+- [x] **Legal Pages** — Terms, Privacy, Delivery & Returns (Nigerian consumer law compliant)
+- [x] **SEO Assets** — robots.txt + sitemap.xml + sitemap-0.xml via scripts/generate-sitemap.cjs
+- [ ] **Load Testing** — Simulate launch traffic — pending
+- [ ] **Launch Checklist** — Final verification against success metrics — pending (see task-queue.md)
 
 ---
 
@@ -144,18 +147,17 @@
 
 ---
 
-## Implementation Notes (2026-08-30)
+## Implementation Notes (2026-09-01)
 
-**Current State:** Foundation sprint complete. All UI for Phases 0-3 implemented using mock data. Prisma schema defined and seeded but not connected to queries. No API routes, Server Actions, or Paystack integration yet.
+**Current State:** Backend Integration + Payments + Polish sprints delivered (2026-08-31). Cart/Payments fully functional with real Prisma. Legal pages, SEO assets, error/empty states complete. Remaining gap: catalog queries (products/chapters/categories) still mock — task-queue incorrectly marks them [x] "Now using real Prisma data" but code inspection shows mock arrays + artificial delays. All other task-queue phases 3-5 correctly completed.
 
-**Next Priority:** Connect Prisma to database, implement cart/checkout backend queries, add Paystack integration, create API routes for cart and checkout operations.
+**Next Priority:** Migrate `src/lib/db/products.ts`, `chapters.ts`, `categories.ts` to real Prisma queries (matching cart.ts/orders.ts pattern). Then extract validations.ts, add analytics event tracking, set up CI/CD, cross-browser testing, production content, and Vercel deployment.
 
-**Technical Debt to Address:**
-1. Replace all mock data in `src/lib/db/*.ts` with real Prisma queries
-2. Create `src/lib/db/cart.ts` and `src/lib/db/orders.ts` with real implementations
-3. Add `src/lib/paystack.ts`, `src/lib/whatsapp.ts`, `src/lib/analytics.ts`
-4. Create API routes: `/api/cart`, `/api/checkout`, `/api/payments/*`, `/api/webhooks/paystack`
-5. Add Zod validation schemas in `src/lib/validations.ts`
-6. Implement session-based cart with cookie
-7. Add error boundaries and comprehensive empty states
-8. Set up GitHub Actions CI/CD pipeline
+**Technical Debt Still Pending:**
+1. Replace mock data in `src/lib/db/products.ts`, `chapters.ts`, `categories.ts` with real Prisma queries (HIGH — drift)
+2. Extract `src/lib/validations.ts` (Zod schemas currently inline in checkout)
+3. Add `src/lib/analytics.ts` event tracking (providers only)
+4. Create `src/hooks/` and `src/types/` directories (useCart lives in lib/cart-context, inline interfaces remain)
+5. Set up GitHub Actions CI/CD pipeline (only opencode workflows exist)
+6. Cross-browser testing, production content, journal articles, live keys, Vercel deployment
+7. Add PWA manifest.json, comprehensive tests (test-plan exists, no test files)

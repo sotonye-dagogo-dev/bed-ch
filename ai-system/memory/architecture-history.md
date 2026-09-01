@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-08-30
+> - last-verified-against-code: 2026-09-01
 > - staleness-policy: append-only; never delete, only supersede with new entry linking back
 
 > **Overview:** Architectural decision log with timestamps. Each entry: Date, Decision, Context, Impact, Related Files.
@@ -32,3 +32,25 @@
 - `ai-system/index/dependency-graph.md`
 - `ai-system/planning/project-plan.md`
 - `ai-system/planning/task-queue.md`
+
+---
+
+## 2026-09-01: Backend Integration & Payments Architecture Added
+
+**Decision:** Added full backend layer to architecture:
+- `src/lib/db/cart.ts` + `src/lib/db/orders.ts` (real Prisma) alongside still-mock catalog queries
+- `src/lib/cart-context.tsx` (client CartProvider) + `src/lib/server-actions.ts` + 5 API route groups
+- `src/lib/paystack.ts` + `src/lib/whatsapp.ts`
+- `src/app/order/[id]` + `checkout/callback` + legal pages + sitemap generation + error/empty components
+- Schema: added Product↔OrderItem and ProductVariant↔OrderItem relations
+
+**Context:** Sprints 1-3 delivered cart persistence, Paystack flow, polish. Catalog migration deferred — documented as drift.
+
+**Impact:** New dependencies: cart-context → /api/cart → cart.ts → Prisma; checkout → orders.ts → Tx; Paystack webhook HMAC. Sitemap postbuild now part of build pipeline.
+
+**Related Files:**
+- `ai-system/system-architecture.md` (updated diagram + module table + data flows)
+- `ai-system/index/repo-map.md` + `index/dependency-graph.md` (new api/cart, paystack, cart-context)
+- `prisma/schema.prisma` (OrderItem relations)
+- `package.json` (postbuild sitemap)
+- `ai-system/planning/task-queue.md` (phases 3-5 marked complete)

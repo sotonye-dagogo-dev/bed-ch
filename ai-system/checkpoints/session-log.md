@@ -3,10 +3,44 @@
 > **Metadata**
 >
 > - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-08-30
+> - last-verified-against-code: 2026-09-01
 > - staleness-policy: append-only; never delete
 
 > **Overview:** Append-only log of all AI-assisted development sessions. Each entry: Date, Agent/Command, Summary, Files Changed, Decisions Made, Next Steps.
+
+## 2026-09-01: Deep Sync — Sprints 1-3 Backend/Payments/Polish Complete
+
+**Command:** `update-ai-system.md`
+**Directive:** Sprint-end deep synchronization after backend integration + payments + polish (directive: update-ai-system.md — no focus filter, full sync)
+
+**Summary:** Synced ai-system after Sprints 1-3 delivery (40 files, 3,600 LOC on 2026-08-31). Repo now has real cart/orders/paystack/whatsapp, 6 API route groups, cart-context + server-actions, legal/SEO/polish assets. Previous mock/empty drifts mostly resolved. Flagged one remaining HIGH drift: catalog queries still mock despite task-queue marking real.
+
+**Files Created/Updated:**
+- `index/repo-map.md` — Added api routes, cart-context, paystack/whatsapp, orders/cart, legal, sitemap, empty/error, global-error; updated public/prisma/ counts
+- `index/dependency-graph.md` — Full rewrite with cart-context/server-actions/api trees, real vs mock split, implemented Paystack/WhatsApp, critical path with real cart
+- `system-architecture.md` — Diagram + module tables (cart/orders/paystack/whatsapp ✅), schema relations, data flows (real checkout/POD/webhook), security/scalability, phases 3-6 status (3-4 ✅, 5 ✅ mostly, 6 🔄)
+- `planning/project-plan.md` — Phases 3-6 flipped to ✅/🔄, implementation notes for 2026-09-01, debt list narrowed to catalog migration + validations/analytics/tests
+- `summaries/dev-history.md` — Added Sprint 1-3 entry (40 files, 3,600 LOC, cart/paystack/whatsapp/API, legal/sitemap/polish, remaining gap: catalog mocks)
+- `memory/lessons-learned.md` — Added 5 entries: session cookie, transactional order, webhook HMAC, task-queue drift, sitemap postbuild
+- `memory/architecture-history.md` — Added 2026-09-01 backend integration entry
+- `index/repo-map.md`, `dependency-graph.md`, `system-architecture.md`, `project-plan.md`, `DISCREPANCY_REPORT.md` — freshness to 2026-09-01
+- `DISCREPANCY_REPORT.md` — Replaced with 2026-09-01 report (1 HIGH drift: catalog still mocks)
+- `checkpoints/session-log.md` + `in-progress.md` — Updated
+
+**Key Findings (Drift Detected):**
+1. HIGH — Catalog queries (products/chapters/categories) still mock despite task-queue `[x] Now using real Prisma data`
+2. MEDIUM — validations.ts not extracted (inline Zod in checkout)
+3. LOW — Analytics providers only (no event tracking)
+4. MEDIUM — No tests/CI/CD
+5. LOW — PWA manifest, not-found, next-sitemap choice
+
+**Next Steps:**
+1. Migrate products/chapters/categories to real Prisma (P0)
+2. Extract validations.ts, add analytics event tracking
+3. Create hooks/types dirs, add tests/CI/CD
+4. Cross-browser testing, production content, journal, live keys, Vercel deploy
+
+---
 
 ## 2026-08-30: Deep Sync — Sprint 0 Foundation Complete
 

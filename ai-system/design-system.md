@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-08-30
+> - last-verified-against-code: 2026-09-01
 > - staleness-policy: re-verify if design tokens or component library changes
 
 > **Overview:** UI/UX rules, design tokens, component patterns, and accessibility standards derived from the design brief.

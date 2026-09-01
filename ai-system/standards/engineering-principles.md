@@ -1,8 +1,8 @@
 # Engineering Principles
 
 > **Metadata**
-> - last-updated-by: bootstrap-project
-> - last-verified-against-code: 2026-08-29
+> - last-updated-by: update-ai-system
+> - last-verified-against-code: 2026-09-01
 > - staleness-policy: this file changes rarely — trust unless explicitly flagged
 
 > **Overview:** The canonical doctrine for how code should be written and structured in any project using this system. Distinct from `protocols/quality-gate.md` (which governs verification of finished work) and `design-system.md` (which governs visual/UX specifics per project). This file is checked — see §25 for how it is enforced.

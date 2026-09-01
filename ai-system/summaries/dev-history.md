@@ -3,10 +3,43 @@
 > **Metadata**
 >
 > - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-08-30
+> - last-verified-against-code: 2026-09-01
 > - staleness-policy: append-only; weekly summary entries
 >
 > **Overview:** Chronological summary of development milestones. Each entry: Date, Milestone, Summary, Metrics.
+
+---
+
+## 2026-09-01: Backend Integration + Payments + Polish Delivered (Sprints 1-3)
+
+**Milestone:** Phases 3-5 complete — Cart with Prisma + session, Paystack integration, Polish (error/empty/legal/sitemap)
+
+**Summary:** Delivered Sprint 1-3 work on 2026-08-31 (commits 95681dc + task-queue flips). Cart now uses real Prisma (`cart.ts` + `orders.ts`) with anonymous session cookie (httpOnly, 1yr), stock validation, transactional order creation. Paystack fully integrated (`paystack.ts` + `/api/payments/paystack/{initialize,verify}` + `/api/webhooks/paystack` with HMAC verification). Checkout creates orders via `/api/checkout` or Server Actions, handling POD eligibility (≤₦50k, Lagos/Abuja/PH/Rivers). Cart UI migrated to `useCart` (CartContext fetch `/api/cart`). Legal pages (Terms, Privacy, Delivery & Returns), sitemap/robots generation, ErrorBoundary + global-error, EmptyState components completed. Remaining gap: catalog queries (`products.ts`, `chapters.ts`, `categories.ts`) still mock despite task-queue marking them real — flagged as high drift.
+
+**Key Accomplishments:**
+- `src/lib/db/cart.ts` (251 LOC) — getCart, addToCart, updateQuantity, removeFromCart, clearCart, totals, getSessionId via cookies()
+- `src/lib/db/orders.ts` (238 LOC) — createOrder (Tx + stock decrement), getOrderById, updatePaymentStatus, getOrdersByPhone
+- `src/lib/paystack.ts` (128 LOC) — initializePayment, verifyPayment, verifyWebhookSignature (createHmac sha512), handleWebhook
+- `src/lib/whatsapp.ts` (109 LOC) — generateWhatsAppOrderUrl (customer/admin) with item totals, delivery labels, POD notices
+- `src/lib/cart-context.tsx` (197 LOC) — CartProvider + useCart (GET/POST/DELETE /api/cart)
+- `src/lib/server-actions.ts` (121 LOC) — addToCartAction, checkoutAction (FormData → createOrder → redirect POD vs Paystack)
+- API routes: /api/cart, /api/cart/[cartItemId], /api/checkout (stock/phone/POD validation), /api/payments/paystack/{initialize,verify}, /api/webhooks/paystack
+- Cart page rewritten to client `useCart` (loading/error/empty states); Checkout page client with `useCart` + 4-step validation; Callback page for Paystack verification
+- Order pages: /order/[id] + /order/[id]/success with WhatsApp CTA
+- Legal pages: /terms, /privacy, /delivery-returns (Nigerian law compliant)
+- SEO: public/robots.txt, sitemap.xml + sitemap-0.xml, scripts/generate-sitemap.cjs (Prisma), postbuild hook
+- Polish: src/components/empty/EmptyState.tsx, src/components/error/ErrorBoundary.tsx, src/app/global-error.tsx
+
+**Metrics:**
+- Files added/modified: 40 (8 lib/api + 10 app routes + 3 components + sitemap + seed/schema tweaks)
+- New LOC: ~3,600 (per merge #6 stat)
+- Tasks completed: Phase 3 (6/6) + Phase 4 (6/6) + Phase 5 partially (6/10, legal/skeletons/errors done)
+- Prisma schema: added OrderItem relations to Product/ProductVariant + OrderItem variantId optional
+
+**Known Gaps (post this sprint):**
+- Catalog queries still mock (products/chapters/categories) — must migrate to Prisma
+- No validations.ts, analytics events, tests, CI/CD, types/hooks dirs, PWA manifest
+- Cross-browser testing, production content, journal articles, live keys, Vercel deployment pending
 
 ---
 
