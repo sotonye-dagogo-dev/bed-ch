@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-08-30
+> - last-verified-against-code: 2026-09-01
 > - staleness-policy: re-verify if folder structure changes
 >
 > **Overview:** Folder structure with purpose of each directory. Auto-regenerable via script.
@@ -119,7 +119,8 @@ ai-system/
 src/
 ├── app/                       # Next.js App Router pages
 │   ├── globals.css            # Global styles + CSS variables
-│   ├── layout.tsx             # Root layout (providers, fonts, header, footer, trust bar)
+│   ├── layout.tsx             # Root layout (providers, cart context, header, footer, trust bar, analytics)
+│   ├── global-error.tsx       # Global error boundary (useEffect logging, retry)
 │   ├── page.tsx               # Homepage (hero, search, bestsellers, chapter teaser)
 │   ├── shop/
 │   │   └── page.tsx           # Shop listing with filters, product grid, pagination
@@ -128,10 +129,32 @@ src/
 │   ├── chapter/
 │   │   └── [slug]/page.tsx    # Chapter page (hero, curated products, bundle offer)
 │   ├── cart/
-│   │   └── page.tsx           # Full-page cart (also accessible via slide-out)
+│   │   ├── layout.tsx         # Cart layout wrapper
+│   │   └── page.tsx           # Full-page cart (client, useCart hook, real totals)
 │   ├── checkout/
-│   │   └── page.tsx           # Multi-step checkout (contact → delivery → payment → confirm)
-│   └── not-found.tsx          # 404 page (not yet created)
+│   │   ├── page.tsx           # Multi-step checkout (4 steps, Zod inline, useCart)
+│   │   └── callback/
+│   │       ├── page.tsx       # Paystack callback handler page
+│   │       └── CheckoutCallbackContent.tsx # Verifies payment, shows status
+│   ├── order/
+│   │   └── [id]/
+│   │       ├── page.tsx                # Order detail page (server, getOrderById)
+│   │       ├── OrderDetailContent.tsx  # Order summary, WhatsApp CTA
+│   │       └── success/
+│   │           ├── page.tsx                # Success page wrapper
+│   │           └── OrderSuccessContent.tsx # Confetti, order summary, WhatsApp links
+│   ├── terms/page.tsx         # Legal: Terms of Service (Nigerian consumer law)
+│   ├── privacy/page.tsx       # Legal: Privacy Policy
+│   ├── delivery-returns/page.tsx # Legal: Delivery & Returns (fees, POD rules)
+│   └── api/                   # API Routes (NEW - Sprint 1-2)
+│       ├── cart/
+│       │   ├── route.ts       # GET cart, POST add, DELETE clear
+│       │   └── [cartItemId]/route.ts # PATCH update qty, DELETE remove
+│       ├── checkout/route.ts  # POST create order, validate POD/stock
+│       ├── payments/paystack/
+│       │   ├── initialize/route.ts # POST init Paystack Tx
+│       │   └── verify/route.ts     # POST verify payment
+│       └── webhooks/paystack/route.ts # POST handle charge.success/failed
 ├── components/                # React components
 │   ├── ui/                    # Primitive UI components
 │   │   ├── Button.tsx
@@ -143,7 +166,7 @@ src/
 │   │   ├── Skeleton.tsx       # Loading placeholders
 │   │   └── index.ts           # Barrel export
 │   ├── layout/                # Layout components
-│   │   ├── Header.tsx         # Sticky header with logo, search, cart, WhatsApp, mobile menu
+│   │   ├── Header.tsx         # Sticky header (logo, search, cart via useCart, mobile menu)
 │   │   ├── Footer.tsx         # Footer with links, trust badges, WhatsApp CTA, social
 │   │   ├── TrustBar.tsx       # Fixed bottom mobile: Same-Day, POD, Returns
 │   │   └── index.ts           # Barrel export
@@ -152,7 +175,11 @@ src/
 │   │   ├── FilterSidebar.tsx  # Collapsible filters (category, price, size, color, chapter)
 │   │   └── index.ts           # Barrel export
 │   ├── cart/                  # Cart & checkout components
-│   │   └── CartSlideOut.tsx   # Slide-out cart with items, summary, checkout CTA
+│   │   └── CartSlideOut.tsx   # Slide-out cart (client, useCart, real totals)
+│   ├── empty/
+│   │   └── EmptyState.tsx     # Empty states: cart, products, search, generic
+│   ├── error/
+│   │   └── ErrorBoundary.tsx  # Class component, retry + home CTA
 │   ├── whatsapp/              # WhatsApp integration
 │   │   └── WhatsAppFloatButton.tsx  # Floating chat button with pulse + tooltip
 │   ├── analytics/             # Analytics providers
@@ -163,14 +190,20 @@ src/
 │   │   └── index.ts           # Barrel export
 ├── lib/                       # Core utilities & data access
 │   ├── prisma.ts              # Prisma client singleton
-│   ├── db/                    # Database queries (currently using mock data)
-│   │   ├── products.ts        # Product queries (list, get, search, by-category, by-chapter)
-│   │   ├── chapters.ts        # Chapter queries (list, get, products-by-chapter)
-│   │   └── categories.ts      # Category queries (list, get)
-│   ├── utils.ts               # Formatters (currency, slugify), validators, constants
+│   ├── cart-context.tsx       # CartContext (useCart hook, fetch /api/cart)
+│   ├── server-actions.ts      # Server Actions (addToCart, checkoutAction with redirect)
+│   ├── paystack.ts            # Paystack client (initialize, verify, webhook)
+│   ├── whatsapp.ts            # WhatsApp URL generators (customer/admin)
+│   ├── db/
+│   │   ├── products.ts        # Product queries (STILL MOCK - not migrated to Prisma)
+│   │   ├── chapters.ts        # Chapter queries (STILL MOCK)
+│   │   ├── categories.ts      # Category queries (STILL MOCK)
+│   │   ├── cart.ts            # Cart queries (REAL Prisma: getCart, add, update, remove)
+│   │   └── orders.ts          # Order queries (REAL Prisma: createOrder Tx, stock decrement)
+│   ├── utils.ts               # Formatters, validators, NIGERIAN_STATES, DELIVERY_OPTIONS
 │   └── index.ts               # Barrel export
-├── hooks/                     # Custom React hooks (not yet created)
-└── types/                     # TypeScript types (not yet created - using inline interfaces)
+├── hooks/                     # Custom React hooks (not yet created - useCart lives in lib/cart-context)
+└── types/                     # TypeScript types (not yet created - using inline + Prisma generated)
 ```
 
 ---
@@ -179,9 +212,9 @@ src/
 
 ```
 prisma/
-├── schema.prisma              # Database schema (matches system-architecture.md)
-├── migrations/                # Migration history (not yet created)
-└── seed.ts                    # Seed script with 9 chapters, 8 categories, 12 products, variants, bundles
+├── schema.prisma              # Database schema (added orderItems relations to Product/ProductVariant)
+├── migrations/                # Migration history (not yet created - using db push)
+└── seed.ts                    # Seed script with 8 categories, 9 chapters, 12 products, variants, 3 bundles
 ```
 
 ---
@@ -193,8 +226,9 @@ public/
 ├── images/                    # (empty - using Unsplash URLs for now)
 ├── icons/                     # (empty - favicon, PWA icons not yet added)
 ├── fonts/                     # (empty - using Google Fonts)
-├── robots.txt                 # (not yet created)
-├── sitemap.xml                # (not yet created - will be auto-generated)
+├── robots.txt                 # ✅ Created (allow /, sitemap reference)
+├── sitemap.xml                # ✅ Auto-generated (static + categories + chapters + products)
+├── sitemap-0.xml              # Generated shard
 └── manifest.json              # (not yet created - PWA manifest)
 ```
 
@@ -204,7 +238,7 @@ public/
 
 | File | Purpose |
 |------|---------|
-| `package.json` | Dependencies, scripts (dev, build, start, lint, typecheck, prisma:generate, prisma:push, prisma:studio, db:seed) |
+| `package.json` | Dependencies, scripts (dev, build, postbuild sitemap, start, lint, typecheck, prisma:generate, prisma:push, prisma:studio, db:seed, postinstall) |
 | `tailwind.config.ts` | Design tokens, theme extension (colors, fonts, spacing, radius, shadows, transitions) |
 | `tsconfig.json` | TypeScript config (strict, path aliases @/*) |
 | `next.config.js` | Next.js config (images remotePatterns, optimizePackageImports) |
@@ -213,6 +247,7 @@ public/
 | `.eslintrc.json` | ESLint config (Next.js, TypeScript) |
 | `.prettierrc` | Prettier config |
 | `.gitignore` | Ignored files (node_modules, .env, .next, dist, *.log) |
+| `scripts/generate-sitemap.cjs` | Sitemap generation (Prisma queries for dynamic routes) |
 
 ---
 
@@ -221,7 +256,7 @@ public/
 | Entry | File | Purpose |
 |-------|------|---------|
 | Dev Server | `npm run dev` | `next dev` — Turbopack enabled |
-| Build | `npm run build` | `next build` — Production build |
+| Build | `npm run build` | `next build` — Production build (+ sitemap) |
 | Start | `npm run start` | `next start` — Production server |
 | Lint | `npm run lint` | `next lint` — ESLint |
 | Type Check | `npm run typecheck` | `tsc --noEmit` |

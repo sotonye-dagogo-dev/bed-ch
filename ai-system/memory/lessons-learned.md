@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-08-30
+> - last-verified-against-code: 2026-09-01
 > - staleness-policy: append-only; never delete, only supersede with new entry linking back
 >
 > **Overview:** Debugging insights, patterns that worked/failed, gotchas discovered. Each entry: Situation, What Happened, Root Cause, Fix, Prevention.
@@ -191,3 +191,88 @@ if (!ga4Id || ga4Id === 'G-XXXXXXXXXX') return null;
 - Keep domain constants in `utils.ts` or `constants.ts` — don't scatter
 - If expanding to other countries, extract to configurable locale system
 - Phone validation should eventually use a library (libphonenumber-js)
+
+---
+
+## 2026-09-01: Cart Persistence via Session Cookie + Prisma
+
+**Situation:** Cart must persist anonymously without auth; guest checkout only.
+
+**What Happened:** Implemented `getSessionId()` in `src/lib/db/cart.ts:41` using `next/headers cookies()` — reads `sessionId`, creates with `crypto.randomUUID()`, sets httpOnly/lax/1yr. All cart queries (`getCart`, `addToCart`, `updateCartItemQuantity`, `removeFromCart`, `clearCart`) use this sessionId. Complemented by `src/lib/cart-context.tsx` client hook fetching `/api/cart` and API routes bridging cookie persistence. Stock validated before add/update.
+
+**Root Cause:** MVP has no auth; session via cookie is simplest persistence.
+
+**Fix:** HttpOnly cookie prevents XSS theft; Prisma Cart model indexed on sessionId; transaction not needed for single CartItem upsert but used for order creation.
+
+**Prevention:**
+- Document session lifecycle (1yr maxAge) — add expiry cleanup job later
+- Add rate limiting on /api/cart to prevent abuse
+- When adding auth later, migrate sessionId → userId
+
+---
+
+## 2026-09-01: Transactional Order Creation with Stock Decrement
+
+**Situation:** Order creation must be atomic — create Order+Items and decrement stock.
+
+**What Happened:** `src/lib/db/orders.ts:92` uses `prisma.$transaction(async tx => { create order → loop variant update decrement })`. Subtotal calculated from variant price override, deliveryFee via `calculateDeliveryFee`. If any variant missing or transaction fails, whole order rolls back.
+
+**Root Cause:** Without transaction, order could be created but stock not decremented (or vice versa) on crash.
+
+**Fix:** Prisma transaction ensures atomicity; cart fetched by sessionId + variantId filtering prevents mismatched items.
+
+**Prevention:**
+- Add optimistic locking or check stock inside transaction to avoid race
+- Current code checks stock before transaction in /api/checkout but not inside Tx — could oversell under concurrency
+- Future: use `updateMany` with where stock >= quantity or DB constraint
+
+---
+
+## 2026-09-01: Paystack Webhook HMAC Verification
+
+**Situation:** Webhook POSTs must be authenticated.
+
+**What Happened:** `src/lib/paystack.ts:99` uses `crypto.createHmac('sha512', WEBHOOK_SECRET).update(payload).digest('hex')` compared to `x-paystack-signature` in `/api/webhooks/paystack/route.ts`. `handleWebhook` extracts orderId from metadata custom_fields.
+
+**Root Cause:** Without HMAC, attacker could forge paid events.
+
+**Fix:** Signature verified before `handleWebhook`; orderId extracted from custom_fields variable_name `order_id`.
+
+**Prevention:**
+- Test webhook locally with Paystack CLI; log failures
+- Add idempotency: if order already PAID, skip duplicate update
+- Current code logs but doesn't verify amount matches — add amount check vs order.total
+
+---
+
+## 2026-09-01: Task-Queue Drift — False "Real Prisma" Claims
+
+**Situation:** After 2026-08-31 commits, task-queue.md marked products/chapters/categories as "[x] Now using real Prisma data" but file inspection shows they still use mock arrays.
+
+**What Happened:** `src/lib/db/products.ts`, `chapters.ts`, `categories.ts` still contain `mockProducts` etc. with artificial delays. Only `cart.ts` and `orders.ts` migrated. Task-queue update was premature — possibly conflated cart completion with catalog migration.
+
+**Root Cause:** Bulk marking of Phase 1 tasks without verifying file contents.
+
+**Fix:** Added drift entry to DISCREPANCY_REPORT.md; keep docs accurate until migration done.
+
+**Prevention:**
+- Verify `grep -c "mockProducts" src/lib/db/products.ts` before marking complete
+- Use `sync-context` lightweight check weekly to catch drift early
+- Treat task-queue as source of truth only after `last-verified-against-code` matches
+
+---
+
+## 2026-09-01: Sitemap Postbuild Generation
+
+**Situation:** Sitemap must include dynamic product/category/chapter slugs.
+
+**What Happened:** Created `scripts/generate-sitemap.cjs` using Prisma to query active slugs, writing `public/sitemap.xml` + `sitemap-0.xml`. Hooked via `package.json:postbuild` ("node scripts/generate-sitemap.cjs"). `next-sitemap` added to deps but not used — custom script preferred.
+
+**Root Cause:** Next.js doesn't auto-generate sitemap for dynamic routes.
+
+**Fix:** Custom CommonJS script avoids ESM/Prisma issues; queries categories/chapters/products in parallel.
+
+**Prevention:**
+- Run `npm run build` locally to verify sitemap output before deploy
+- Add `public/sitemap*.xml` to .gitignore or commit generated? Currently committed — decide policy
+- Consider `next-sitemap` config instead if customization grows

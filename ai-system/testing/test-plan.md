@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: bootstrap-project
-> - last-verified-against-code: 2026-08-29
+> - last-updated-by: update-ai-system
+> - last-verified-against-code: 2026-09-01
 > - staleness-policy: update when features added or test strategy changes
 
 > **Overview:** Test strategy for detected stack (Next.js 14, TypeScript, Prisma, Paystack, Vercel). Template filled for project.
