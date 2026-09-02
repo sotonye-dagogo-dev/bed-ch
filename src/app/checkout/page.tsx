@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { formatCurrency, NIGERIAN_STATES, DELIVERY_OPTIONS, PAYMENT_METHODS } from '@/lib/utils';
+import { NIGERIAN_PHONE_REGEX, isPODEligibleForOrder } from '@/lib/validations';
+import { trackBeginCheckout } from '@/lib/analytics';
 import { useCart } from '@/lib/cart-context';
 
 const steps = [
@@ -74,6 +76,17 @@ function CheckoutPageContent() {
     setIsSubmitting(true);
 
     try {
+      try {
+        trackBeginCheckout(
+          subtotal + deliveryFee,
+          cartItems.map((i) => ({
+            item_id: i.variant.product.id,
+            item_name: i.variant.product.name,
+            price: i.variant.price ?? i.variant.product.price,
+            quantity: i.quantity,
+          }))
+        );
+      } catch { /* analytics ignore */ }
       const formDataToSubmit = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
         formDataToSubmit.append(key, value);
@@ -208,7 +221,7 @@ function CheckoutPageContent() {
                       placeholder="080XXXXXXXX"
                       required
                       autoComplete="tel"
-                      error={formData.phone && !/^(\+234|0)[789]\d{9}$/.test(formData.phone) ? 'Enter a valid Nigerian phone number' : undefined}
+                      error={formData.phone && !NIGERIAN_PHONE_REGEX.test(formData.phone) ? 'Enter a valid Nigerian phone number' : undefined}
                     />
                     <Input
                       label="Email Address"
@@ -257,7 +270,7 @@ function CheckoutPageContent() {
                     <div className="space-y-3" role="radiogroup" aria-label="Delivery options">
                       {DELIVERY_OPTIONS.map((option) => {
                         const isPOD = option.value === 'PAY_ON_DELIVERY';
-                        const isEligible = !isPOD || (subtotal <= 5000000 && ['Lagos', 'Abuja', 'Port Harcourt', 'Rivers'].some(s => formData.state.toLowerCase().includes(s.toLowerCase())));
+                        const isEligible = !isPOD || isPODEligibleForOrder(subtotal, formData.state);
                         const fee = isPOD ? 150000 : option.fee;
                         const isFree = subtotal >= 5000000 && option.value === 'STANDARD';
                         
@@ -315,7 +328,7 @@ function CheckoutPageContent() {
                   <div className="space-y-3" role="radiogroup" aria-label="Payment methods">
                     {PAYMENT_METHODS.map((method) => {
                       const isPOD = method.value === 'PAY_ON_DELIVERY';
-                      const isEligible = !isPOD || (subtotal <= 5000000 && ['Lagos', 'Abuja', 'Port Harcourt', 'Rivers'].some(s => formData.state.toLowerCase().includes(s.toLowerCase())));
+                      const isEligible = !isPOD || isPODEligibleForOrder(subtotal, formData.state);
                       
                       let icon: React.ReactNode = <CreditCard className="h-5 w-5" />;
                       if (method.value === 'PAYSTACK_TRANSFER') icon = <span className="text-lg">🏦</span>;

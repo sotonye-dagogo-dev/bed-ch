@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { CheckCircle, Truck, CreditCard, Shield, MessageCircle, Download } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -7,6 +8,7 @@ import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
 import { generateWhatsAppOrderUrl } from '@/lib/whatsapp';
 import { OrderWithItems } from '@/lib/db/orders';
+import { trackPurchase } from '@/lib/analytics';
 
 interface OrderSuccessContentProps {
   order: OrderWithItems;
@@ -14,6 +16,14 @@ interface OrderSuccessContentProps {
 
 export function OrderSuccessContent({ order }: OrderSuccessContentProps) {
   const isPOD = order.paymentMethod === 'PAY_ON_DELIVERY';
+
+  useEffect(() => {
+    trackPurchase(
+      order.orderNumber,
+      order.total,
+      order.items.map((i) => ({ item_id: i.productId, item_name: i.name, price: i.price, quantity: i.quantity }))
+    );
+  }, [order.orderNumber, order.total, order.items]);
 
   const deliveryOptionLabels: Record<string, string> = {
     STANDARD: 'Standard Delivery (3-5 business days)',

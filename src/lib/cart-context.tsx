@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { trackAddToCart } from '@/lib/analytics';
 
 export interface CartItem {
   id: string;
@@ -101,6 +102,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (data.success) {
         setCart(data.cart);
         setTotals(data.totals);
+        // analytics: infer product from response when available
+        try {
+          const added = (data.cart?.items as CartItem[] | undefined)?.find((i) => i.variantId === variantId);
+          if (added) {
+            trackAddToCart({
+              item_id: added.variant.product.id,
+              item_name: added.variant.product.name,
+              price: added.variant.price ?? added.variant.product.price,
+              quantity,
+              item_category: undefined,
+            });
+          }
+        } catch { /* ignore */ }
         return { success: true };
       } else {
         setError(data.error || 'Failed to add to cart');

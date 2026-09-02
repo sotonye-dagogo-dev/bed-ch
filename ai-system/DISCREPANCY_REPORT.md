@@ -1,15 +1,15 @@
-# Discrepancy Report — update-ai-system.md (2026-09-01)
+# Discrepancy Report — execute-feature drift fix (2026-09-02)
 
-**Command Executed:** `update-ai-system.md`
-**Date:** 2026-09-01
+**Command Executed:** `execute-feature.md` (drift fix)
+**Date:** 2026-09-02
 **Scope:** Full ai-system directory vs actual repository state
-**Previous report:** 2026-08-30
+**Previous report:** 2026-09-01
 
 ---
 
 ## Summary
 
-Performed deep synchronization after Sprints 1-3 delivery (2026-08-31 merge #6: 40 files, ~3,600 LOC). Repo now has real cart/orders/paystack/whatsapp/backend, API routes, legal/SEO/polish. Previous report's HIGH drifts 1-4 are mostly resolved except catalog queries. New drift detected: task-queue claims catalog queries are real but code still mocks.
+Executed drift fix for 2026-09-01 report (6 items). All HIGH/MEDIUM items now resolved in code: catalog queries migrated to Prisma, validations extracted, analytics events added, PWA 404 + manifest added, next-sitemap removed (custom sitemap kept), Vitest scaffolding added. CI workflow deliberately not added (requires `workflows` permission — previous push rejected `ci.yml`). Docs freshness to be bumped by next `update-ai-system` run.
 
 ---
 
@@ -33,13 +33,13 @@ Performed deep synchronization after Sprints 1-3 delivery (2026-08-31 merge #6: 
 
 ---
 
-## Inconsistencies Found (Drift)
+## Inconsistencies Found (Drift) — Status as of 2026-09-02 Fix
 
-### 1. Catalog Queries Still Mocks vs Task-Queue Claims Real — **HIGH**
+### 1. Catalog Queries Still Mocks vs Task-Queue Claims Real — **HIGH** — ✅ FIXED 2026-09-02
 - **Task-queue.md:** `[x] [L] Implement product queries … — Now using real Prisma data` and `[x] [L] category & chapter queries — Now using real Prisma data` (+ similar for chapter template)
 - **Actual:** `src/lib/db/products.ts:61` still defines `const mockProducts: Product[] = [` with 12 hardcoded products and `await new Promise(... setTimeout 50-100)` mock delays. No `prisma.product.findMany` imported. `src/lib/db/categories.ts` and `chapters.ts` identical mock arrays (confirmed via `grep -c mockProducts`). Only `cart.ts` and `orders.ts` use Prisma.
 - **Impact:** Homepage/Shop/Product/Chapter pages all still serve mock data. Homepage `getBestsellers` and shop `getProducts` will not reflect seeded DB changes. Ship milestone requires real data.
-- **Fix required:** Migrate those three files to real Prisma queries matching `cart.ts` pattern (cache/ISR optional). Verify no `mockProducts`/`mockChapters`/`mockCategories` remains.
+  - **Fix 2026-09-02:** Migrated all three files to Prisma: `products.ts` now uses `prisma.product.findMany/count/findFirst` with category/chapter/price/size/color/search/sort filters; `categories.ts` uses `prisma.category.findMany` with `_count.products`; `chapters.ts` uses `prisma.chapter.findMany` with `include: { bundleOffer }`. Verified `grep -rn "mockProducts" src/lib/db/` = 0.
 
 ### 2. Previous Drift #2 Partially Persists — Repo Map Planned vs Actual `hooks/` `types/` — **LOW**
 - **Documented:** `index/repo-map.md` and `dependency-graph.md` previously planned `src/hooks/*`, `src/types/*`, `src/app/(site)/` route groups.
@@ -47,28 +47,27 @@ Performed deep synchronization after Sprints 1-3 delivery (2026-08-31 merge #6: 
 - **Impact:** None now (docs match). But if new contributors expect `src/hooks/useCart` they will mis-locate.
 - **Fix:** Optional: move `useCart` to `src/hooks/useCart.ts` and add `src/types/prisma.ts` re-exports.
 
-### 3. Validations Not Extracted — Checkout Inline Zod — **MEDIUM**
+### 3. Validations Not Extracted — Checkout Inline Zod — **MEDIUM** — ✅ FIXED
 - **Documented:** `system-architecture.md` lists `src/lib/validations.ts` as ❌ not created; task-queue previously had form validation as pending.
 - **Actual:** Checkout page (`src/app/checkout/page.tsx`) validates via inline react-hook-form + Zod + API checks (`/^(\+234|0)[789]\d{9}$/` phone regex, POD eligibility). No standalone `validations.ts`.
 - **Impact:** Validation logic duplicated between client and `src/app/api/checkout/route.ts`. No reusable schemas.
-- **Fix:** Extract Zod schemas to `src/lib/validations.ts` (checkoutSchema) and import in both places.
+  - **Fix 2026-09-02:** Created `src/lib/validations.ts` (`checkoutSchema`, `NIGERIAN_PHONE_REGEX`, `isPODEligibleForOrder`, `validateCheckoutBusinessRules`) and refactored `src/app/api/checkout/route.ts` + `src/app/checkout/page.tsx` to import from it. Deduplication complete.
 
-### 4. Analytics Event Tracking Missing — **LOW**
+### 4. Analytics Event Tracking Missing — **LOW** — ✅ FIXED
 - **Documented:** Dependency-graph flags GA4/Meta/Hotjar as "provider only, no events" — accurate.
 - **Actual:** `src/components/analytics/*` only conditionally load scripts; no `gtag('event', ...)` or `fbq` calls in `addToCart`, `begin_checkout`, `purchase`.
 - **Impact:** Funnel metrics (checkout completion >60%) cannot be measured.
-- **Fix:** Create `src/lib/analytics.ts` with `trackAddToCart`, `trackPurchase` helpers; call from cart-context and success page.
+  - **Fix:** Created `src/lib/analytics.ts` with `trackAddToCart`, `trackPurchase`, `trackBeginCheckout`, `trackViewItem`; integrated in `src/lib/cart-context.tsx` (addToCart), `src/app/checkout/page.tsx` (begin_checkout), `src/app/order/[id]/success/OrderSuccessContent.tsx` (purchase). Verified safe no-ops when providers not loaded.
 
-### 5. Tests & CI/CD Missing — **MEDIUM**
+### 5. Tests & CI/CD Missing — **MEDIUM** — 🟡 PARTIALLY FIXED
 - **Documented:** `project-plan.md` Phase 0 lists CI/CD as `[ ]` pending — accurate.
-- **Actual:** No `tests/` directory, no GitHub Actions workflows beyond opencode triggers (`.github/workflows/opencode.yml`). No `vitest`, `playwright` configs.
-- **Impact:** `test-plan.md` and `test-results.md` describe strategy but no execution; launch checklist items untestable.
-- **Fix:** Add Vitest + Playwright per test-plan.md, add CI workflow for lint/typecheck/test/build.
+  - **Actual (2026-09-01):** No `tests/` directory, no `vitest`/`playwright` configs.
+  - **Fix 2026-09-02:** Added `vitest.config.ts`, `tests/unit/lib/utils.test.ts`, `tests/unit/lib/validations.test.ts` (9 tests passing), added `vitest`, `jsdom`, `@testing-library/react` devDeps + `test` scripts. Playwright + CI workflow deferred: GitHub App lacks `workflows` permission (push rejected on 2026-09-01 for `ci.yml` — see run 33546255639). Workflow to be added after permission granted.
 
-### 6. PWA & Misc Assets — **LOW**
-- `public/manifest.json` still missing (repo-map notes not yet created) — low risk pre-launch.
-- `src/app/not-found.tsx` still missing (404 uses Next default); global-error exists. Consider addingnot-found.
-- `next-sitemap` installed but unused (custom cjs used) — clarify choice in docs.
+### 6. PWA & Misc Assets — **LOW** — ✅ FIXED
+  - `public/manifest.json` ✅ added (plus `site.webmanifest` alias) on 2026-09-02.
+  - `src/app/not-found.tsx` ✅ added on 2026-09-02.
+  - `next-sitemap` ✅ removed from package.json; custom `scripts/generate-sitemap.cjs` is canonical (DB-aware, used in `postbuild`).
 
 ---
 
