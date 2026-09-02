@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getCart } from '@/lib/db/cart';
 import { createOrder } from '@/lib/db/orders';
+import { checkoutSchema, validateCheckoutBusinessRules } from '@/lib/validations';
 
 
 export async function POST(request: NextRequest) {
@@ -34,55 +35,50 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
 
-    // Parse form data
-    const orderData = {
-      customerName: `${formData.get('firstName')} ${formData.get('lastName')}`,
-      customerPhone: formData.get('phone') as string,
-      customerEmail: formData.get('email') as string || undefined,
+    const raw = {
+      firstName: formData.get('firstName') as string,
+      lastName: formData.get('lastName') as string,
+      phone: formData.get('phone') as string,
+      email: formData.get('email') as string || undefined,
       address: formData.get('address') as string,
       city: formData.get('city') as string,
       state: formData.get('state') as string,
-      deliveryOption: formData.get('deliveryOption') as 'STANDARD' | 'EXPRESS_LAGOS' | 'PAY_ON_DELIVERY',
-      paymentMethod: formData.get('paymentMethod') as 'PAYSTACK_CARD' | 'PAYSTACK_TRANSFER' | 'PAYSTACK_USSD' | 'PAY_ON_DELIVERY',
+      deliveryOption: formData.get('deliveryOption') as string,
+      paymentMethod: formData.get('paymentMethod') as string,
       notes: formData.get('notes') as string || undefined,
-      items: cart.items.map(item => ({
-        variantId: item.variantId,
-        quantity: item.quantity,
-      })),
     };
 
-    // Validate required fields
-    if (!orderData.customerName.trim() || !orderData.customerPhone || !orderData.address || !orderData.city || !orderData.state) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
-      );
+    const parsed = checkoutSchema.safeParse(raw);
+    if (!parsed.success) {
+      const firstError = parsed.error.errors[0]?.message || 'Validation failed';
+      return NextResponse.json({ success: false, error: firstError }, { status: 400 });
     }
 
-    // Validate phone format
-    if (!/^(\+234|0)[789]\d{9}$/.test(orderData.customerPhone)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid phone number format' },
-        { status: 400 }
-      );
-    }
-
-    // Validate POD eligibility
     const subtotal = cart.items.reduce((sum, item) => {
       const price = item.variant.price ?? item.variant.product.price;
       return sum + price * item.quantity;
     }, 0);
 
-    if (orderData.deliveryOption === 'PAY_ON_DELIVERY') {
-      const eligibleStates = ['Lagos', 'Abuja', 'Port Harcourt', 'Rivers'];
-      const isEligibleState = eligibleStates.some(s => orderData.state.toLowerCase().includes(s.toLowerCase()));
-      if (!isEligibleState || subtotal > 5000000) {
-        return NextResponse.json(
-          { success: false, error: 'Pay on Delivery not available for this order' },
-          { status: 400 }
-        );
-      }
+    const businessError = validateCheckoutBusinessRules(parsed.data, subtotal);
+    if (businessError) {
+      return NextResponse.json({ success: false, error: businessError }, { status: 400 });
     }
+
+    const orderData = {
+      customerName: `${parsed.data.firstName} ${parsed.data.lastName}`,
+      customerPhone: parsed.data.phone,
+      customerEmail: parsed.data.email || undefined,
+      address: parsed.data.address,
+      city: parsed.data.city,
+      state: parsed.data.state,
+      deliveryOption: parsed.data.deliveryOption,
+      paymentMethod: parsed.data.paymentMethod,
+      notes: parsed.data.notes || undefined,
+      items: cart.items.map(item => ({
+        variantId: item.variantId,
+        quantity: item.quantity,
+      })),
+    };
 
     // Create order
     const order = await createOrder(sessionId, orderData);
