@@ -1,119 +1,338 @@
 # Design System
 
 > **Metadata**
-> - last-updated-by: (set on first run)
-> - last-verified-against-code: (set after visual audit)
-> - staleness-policy: re-verify if UI components or styling dependencies change
+>
+> - last-updated-by: update-ai-system
+> - last-verified-against-code: 2026-09-01
+> - staleness-policy: re-verify if design tokens or component library changes
 
-> **Overview:** Visual language, component patterns, and UX principles. Agents building UI must read this before writing any frontend code. The colour, typography, and spacing tables below are the **single source of truth** for design tokens (per `standards/engineering-principles.md` §5) — components must consume these tokens rather than redeclaring values.
+> **Overview:** UI/UX rules, design tokens, component patterns, and accessibility standards derived from the design brief.
 
 ---
 
-## Visual Language
+## Design Principles
 
-### Colour Palette
+| Principle | Description |
+|-----------|-------------|
+| **Clean & Uncluttered** | White background, black text, generous whitespace. Product photos are the color. |
+| **Mobile-First** | 90% of traffic on phones. All designs start at 375px, scale up. |
+| **Fast** | Under 3 seconds on 3G. Minimal JS, optimized images, ISR for catalog. |
+| **Trust-Forward** | "Pay on Delivery", "Lagos Same-Day", "7-Day Returns" visible at all times. |
+| **Chapter as Guide** | Life-stage organization helps discovery, never blocks purchase. |
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| primary | [#hex] | [buttons, links, CTAs] |
-| secondary | [#hex] | [accents, highlights] |
-| background | [#hex] | [page background] |
-| surface | [#hex] | [cards, modals] |
-| text-primary | [#hex] | [main body text] |
-| text-muted | [#hex] | [labels, captions] |
-| danger | [#hex] | [errors, destructive actions] |
-| success | [#hex] | [confirmations] |
+---
+
+## Design Tokens
+
+### Colors
+
+```css
+/* Primary — used for buttons, links, trust badges, focus states */
+--color-primary: #8FBC8F;        /* Sage Green — primary accent */
+--color-primary-hover: #7AA87A;
+--color-primary-active: #6B946B;
+
+/* Secondary — warm sand for subtle accents */
+--color-secondary: #D2B48C;      /* Warm Sand */
+--color-secondary-hover: #C4A57D;
+
+/* Neutrals */
+--color-bg: #FFFFFF;             /* Pure white background */
+--color-bg-subtle: #FAFAFA;      /* Card backgrounds, hover states */
+--color-border: #E5E5E5;         /* Borders, dividers */
+--color-border-strong: #D4D4D4;  /* Input borders, focus rings */
+--color-text: #1A1A1A;           /* Primary text (near black) */
+--color-text-muted: #6B6B6B;     /* Secondary text, descriptions */
+--color-text-inverse: #FFFFFF;   /* Text on primary buttons */
+
+/* Semantic */
+--color-success: #2E7D32;        /* Success messages, delivered badges */
+--color-warning: #F57F17;        /* Low stock, pending states */
+--color-error: #C62828;          /* Error messages, out of stock */
+--color-info: #1565C0;           /* Info badges, links */
+
+/* Trust Badges */
+--color-trust-bg: #F1F8E9;       /* Light sage for trust bar */
+--color-trust-text: #2E7D32;     /* Dark green text */
+```
 
 ### Typography
 
-| Style | Font | Size | Weight |
-|-------|------|------|--------|
-| Heading 1 | [font] | [size] | [weight] |
-| Body | [font] | [size] | [weight] |
-| Code | [font] | [size] | [weight] |
+```css
+/* Single font family: Inter (variable font for performance) */
+--font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-### Spacing Scale
+/* Two weights only */
+--font-weight-regular: 400;
+--font-weight-bold: 600;
 
-[e.g. 4px base unit: 4, 8, 12, 16, 24, 32, 48, 64]
+/* Single size hierarchy (mobile-first, fluid scaling) */
+--text-xs:     clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);   /* 12-14px */
+--text-sm:     clamp(0.875rem, 0.8rem + 0.375vw, 1rem);     /* 14-16px */
+--text-base:   clamp(1rem, 0.9rem + 0.5vw, 1.125rem);       /* 16-18px */
+--text-lg:     clamp(1.125rem, 1rem + 0.625vw, 1.25rem);    /* 18-20px */
+--text-xl:     clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);     /* 20-24px */
+--text-2xl:    clamp(1.5rem, 1.3rem + 1vw, 2rem);           /* 24-32px */
+--text-3xl:    clamp(2rem, 1.7rem + 1.5vw, 3rem);           /* 32-48px */
+
+/* Line heights */
+--leading-tight: 1.1;
+--leading-normal: 1.5;
+--leading-relaxed: 1.625;
+```
+
+### Spacing
+
+```css
+/* 4px base unit, mobile-first */
+--space-1:  0.25rem;  /* 4px */
+--space-2:  0.5rem;   /* 8px */
+--space-3:  0.75rem;  /* 12px */
+--space-4:  1rem;     /* 16px */
+--space-5:  1.25rem;  /* 20px */
+--space-6:  1.5rem;   /* 24px */
+--space-8:  2rem;     /* 32px */
+--space-10: 2.5rem;   /* 40px */
+--space-12: 3rem;     /* 48px */
+--space-16: 4rem;     /* 64px */
+
+/* Container widths */
+--container-sm:  640px;
+--container-md:  768px;
+--container-lg:  1024px;
+--container-xl:  1280px;
+--container-full: 100%;
+```
+
+### Border Radius
+
+```css
+--radius-none: 0;
+--radius-sm:   0.25rem;  /* 4px — inputs, badges */
+--radius-md:   0.5rem;   /* 8px — cards, buttons */
+--radius-lg:   0.75rem;  /* 12px — modals, sheets */
+--radius-full: 9999px;   /* pills, avatars */
+```
+
+### Shadows
+
+```css
+--shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.05);
+--shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+--shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+--shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+```
+
+### Transitions
+
+```css
+--transition-fast: 150ms ease-out;
+--transition-normal: 200ms ease-out;
+--transition-slow: 300ms ease-out;
+```
 
 ---
 
 ## Component Patterns
 
 ### Buttons
-- Primary: [style and usage]
-- Secondary: [style and usage]
-- Destructive: [describe]
-- Disabled state: [describe]
+
+| Variant | Usage | Styles |
+|---------|-------|--------|
+| **Primary** | Main CTAs (Add to Cart, Checkout, Pay) | Sage green bg, white text, rounded-md, bold, h-12 px-6 |
+| **Secondary** | Outline actions (View Details, Continue Shopping) | Transparent bg, sage border, sage text, rounded-md |
+| **Ghost** | Subtle actions (Remove, Edit) | Transparent, text-muted, hover:bg-subtle |
+| **Trust** | Trust badges (POD, Returns, Shipping) | Light sage bg, dark green text, rounded-full, px-3 py-1 text-sm |
+
+**States:** hover (darker), active (darker + scale-95), focus (ring-2 ring-primary/50), disabled (opacity-50, cursor-not-allowed)
+
+### Cards
+
+| Variant | Usage | Styles |
+|---------|-------|--------|
+| **Product** | Product grid items | White bg, border, rounded-lg, overflow-hidden, hover:shadow-md transition |
+| **Chapter** | Chapter grid on homepage | White bg, border, rounded-lg, aspect-square, hover:shadow-lg |
+| **Bundle** | Bundle offer on chapter page | Light sage border, sage accent line top, rounded-lg |
+| **Info** | Trust bar, delivery info | Border, rounded-md, p-4 |
 
 ### Forms
-- Input fields: [style and validation rules]
-- Error messages: [placement and style]
+
+- **Inputs:** White bg, border-border, rounded-md, h-12 px-4, focus:ring-2 focus:ring-primary/50
+- **Labels:** text-sm font-medium text-text, mb-1.5 block
+- **Error:** border-error, text-error text-sm mt-1
+- **Select:** Same as input, with chevron icon
+- **Radio/Checkbox:** Sage accent color, focus:ring-primary/50
+
+### Product Images
+
+- Aspect ratio: 4:5 (portrait) for product cards, 1:1 for thumbnails
+- Next.js Image with `priority` for above-fold, `lazy` for below
+- Blur placeholder (base64) for LCP optimization
+- Max 4 images per product (main + 3 alternates)
 
 ### Navigation
-- [sidebar / topnav / tabs — describe pattern]
 
-### Cards / Containers
-- [shadow, border radius, padding]
+- **Header:** Sticky top, white bg, border-b, h-16, logo + search + cart + WhatsApp
+- **Search:** Expandable on mobile, full-width on desktop, placeholder "Search bedsheets, pillows..."
+- **Mobile Menu:** Slide-out sheet (not dropdown), categories + chapters + pages
+- **Trust Bar:** Fixed bottom on mobile (h-12), 3 badges: POD · Same-Day · Returns
 
-### Modals / Dialogs
-- [confirmation, form-in-modal, alert patterns]
+### Cart Slide-Out
+
+- Fixed right, full height, w-full max-w-sm (mobile), 480px (desktop)
+- Backdrop blur-sm, bg-white, shadow-xl
+- Sticky header (title + close), scrollable items, sticky footer (subtotal + checkout CTA)
+- Animates with slide-in from right (transition-normal)
+
+### WhatsApp Floating Button
+
+- Fixed bottom-right, 24px from edge (above trust bar on mobile)
+- Circular, sage green bg, white WhatsApp icon, shadow-lg
+- Pulse animation (subtle, 2s infinite)
+- Tooltip on desktop hover: "Chat to order"
 
 ---
 
-## UX Principles
+## Page Templates
 
-1. [e.g. Always show loading state for async actions]
-2. [e.g. Destructive actions require confirmation]
-3. [e.g. Error messages must explain what the user can do]
+### Homepage
+```
+Header (sticky)
+├─ Hero: "Everything your bedroom needs." + Search Bar (full width mobile, centered desktop)
+├─ Two Path Buttons: "Shop by Product" | "Shop by Chapter" (stacked mobile, side-by-side desktop)
+├─ Bestsellers: "Shop high-quality bedsheets from ₦6,500" + ProductGrid (8-12 items)
+├─ Chapter Teaser: 9 small ChapterCards (3x3 grid mobile, 9x1 desktop scroll)
+└─ Trust Bar (fixed bottom mobile, sticky footer desktop)
+    ├─ Pay on Delivery
+    ├─ Lagos Same-Day
+    └─ 7-Day Returns
+Footer
+```
+
+### Shop Page
+```
+Header
+├─ Sidebar (mobile: slide-out sheet; desktop: fixed left 280px)
+│  ├─ Categories (with counts)
+│  ├─ Price Range (slider)
+│  ├─ Size (checkboxes)
+│  ├─ Color (color swatches)
+│  └─ Chapter (radio)
+├─ ProductGrid (responsive: 2-col mobile, 3-col tablet, 4-col desktop)
+│  └─ ProductCard: image, name, price from ₦X, "Add to Cart" (icon only mobile)
+└─ Pagination / Infinite Scroll
+Trust Bar
+Footer
+```
+
+### Product Detail Page
+```
+Header
+├─ Gallery: Large image (swipeable mobile, thumbnail strip desktop)
+├─ Product Info:
+│  ├─ Category breadcrumb + Chapter badge (if applicable)
+│  ├─ Name (text-2xl bold)
+│  ├─ Price (text-3xl bold, primary color) + compareAt strikethrough
+│  ├─ Size Selector (radio buttons, required)
+│  ├─ Quantity Stepper
+│  ├─ "Add to Cart" (sticky bottom mobile, primary button full-width)
+│  ├─ "Complete the Look" — 3 related ProductCards (horizontal scroll)
+│  ├─ Delivery Estimate by Location (input → shows date)
+│  └─ Reviews (stars + count, expandable)
+Trust Bar
+Footer
+```
+
+### Chapter Page
+```
+Header
+├─ ChapterHero: "The [Chapter] Bedroom" + 2-sentence intro + hero image
+├─ Curated ProductGrid (12-20 items, same as shop but pre-filtered)
+└─ BundleOffer Card (if active): name, description, discounted price, "Add Bundle to Cart"
+Trust Bar
+Footer
+```
+
+### Cart & Checkout
+```
+Cart Slide-Out (from right)
+├─ Header: "Your Cart (X items)" + Close
+├─ CartItems: image, name, size, price, qty stepper, remove
+├─ Subtotal + Delivery Estimate (based on location)
+└─ "Proceed to Checkout" (primary, full-width)
+
+Checkout Page
+├─ Progress: Cart → Details → Payment → Confirmation
+├─ Form Sections:
+│  ├─ Contact: Name*, Phone*, Email
+│  ├─ Delivery: Address*, City*, State*, Delivery Option* (radio)
+│  └─ Payment: Paystack (card/transfer/USSD) OR Pay on Delivery (conditional)
+├─ Order Summary (sticky right desktop, bottom mobile)
+│  ├─ Items, Subtotal, Delivery Fee, Discount, Total
+└─ "Place Order" (primary, full-width)
+Trust Bar
+```
 
 ---
 
 ## Responsive Breakpoints
 
-| Breakpoint | Value | Target |
-|------------|-------|--------|
-| sm | 640px | Mobile |
-| md | 768px | Tablet |
-| lg | 1024px | Desktop |
-| xl | 1280px | Wide screens |
+```css
+/* Tailwind defaults — mobile-first */
+sm:  640px   /* Large phones / small tablets */
+md:  768px   /* Tablets */
+lg:  1024px  /* Laptops */
+xl:  1280px  /* Desktops */
+2xl: 1536px  /* Large screens */
+```
+
+**Grid behavior:**
+- ProductGrid: 2-col (sm), 3-col (md), 4-col (lg), 5-col (xl)
+- ChapterTeaser: 3-col (sm), 3-col (md), 9-col (lg) with horizontal scroll
+- ChapterGrid: 2-col (sm), 3-col (md), 4-col (lg)
 
 ---
 
-## Accessibility Requirements
+## Accessibility
 
-- All interactive elements must have keyboard focus states
-- Colour contrast must meet WCAG AA (4.5:1 for text)
-- Images must have alt text
-- Forms must have associated labels
-
----
-
-## Reference Library
-
-External design languages — competitor, inspiration, or reference sites — pulled into `design-references/<name>/DESIGN.md` (Tier 4, read when explicitly relevant). The `generate-design-md` command creates them.
-
-These are **inputs to be reconciled**, never the project's source of truth. The token tables in this file remain the single source of truth per engineering principles §5. Promotion from a reference into the project's real tokens is a human decision, not an agent write.
-
-See `design-references/README.md` for the folder contract.
+- **Color Contrast:** All text meets WCAG AA (4.5:1), large text 3:1
+- **Focus Visible:** All interactive elements have visible focus rings (ring-2 ring-primary/50)
+- **Semantic HTML:** Proper heading hierarchy, landmarks, button/link semantics
+- **Alt Text:** All product images have descriptive alt text (product name + key attribute)
+- **ARIA:** Cart slide-out has `role="dialog" aria-modal="true"`, WhatsApp button has `aria-label`
+- **Reduced Motion:** Respects `prefers-reduced-motion` for animations
+- **Touch Targets:** Minimum 44x44px (h-11 min-height for buttons)
 
 ---
 
-## Design Asset Viewer (dev-only entry point)
+## Animation Guidelines
 
-A human-facing route to browse design assets — HTML mocks, images, PDFs — without those assets touching the app's real route table when deployed. This is a dev tool, not an agent workflow, and it is itself governed by the engineering principles like any other page.
+- **Allowed:** Slide-in (cart, mobile menu), fade-in (toasts, modals), scale (button press)
+- **Duration:** 150-300ms max
+- **Easing:** `ease-out` for entrances, `ease-in` for exits
+- **Not Now:** Complex room animations, parallax, 3D transforms (per brief: "later maybe")
+- **Performance:** Use `transform` + `opacity` only, `will-change` sparingly
 
-**Hard rules (not conventions):**
-- Mounted at a distinct, configurable base path (e.g. `/__design/*`) on its own router/middleware branch — never nested under app routes.
-- **Gated:** only mountable when the env flag is set (e.g. `ENABLE_DESIGN_VIEWER=true`), defaulting off. **Never enabled in a production build regardless of the flag** — this is a hard rule, not a convention.
-- Reads a config manifest (engineering principles §1) listing which local folders/paths it is allowed to serve — never an open filesystem browser.
-- No hardcoded asset lists in code.
+---
 
-**Rendering by type:**
-- HTML → sandboxed iframe
-- Images → `<img>`
-- PDF → render pages; where text/structure extraction is needed, use the classify-then-extract approach from the `pdf-html-asset-inspection` skill (detect text vs scanned, extract with position awareness, convert to Markdown) via a small internal utility or thin wrapper.
+## Asset Guidelines
 
-**Extraction backend decision:** chooses between the two registered extraction candidates (see `tools/registry.md` → PDF-extraction-tooling rows; approach documented in `tools/integrations/`) based on the project stack; the choice is documented in `memory/project-decisions.md`.
+- **Product Photos:** Real Nigerian bedrooms, natural light, products on actual beds (not floating)
+- **Format:** WebP (auto via Next.js Image), max 1920px width
+- **Chapter Hero:** Lifestyle shot representing the life stage
+- **Icons:** Lucide React (consistent, tree-shakeable), 24px default
+- **Trust Badges:** SVG, sage green accent, 24x24px
 
-**Where it lives:** see also the `system-architecture.md` configuration points template (the `ENABLE_DESIGN_VIEWER` flag) and the viewer's security isolation note for the deployment platform.
+---
+
+## Implementation Mapping
+
+| Token | Tailwind Config | CSS Variable |
+|-------|----------------|--------------|
+| Colors | `theme.extend.colors` | `--color-*` in `:root` |
+| Typography | `theme.extend.fontFamily`, `fontSize` | `--font-*`, `--text-*` |
+| Spacing | `theme.extend.spacing` | `--space-*` |
+| Radius | `theme.extend.borderRadius` | `--radius-*` |
+| Shadows | `theme.extend.boxShadow` | `--shadow-*` |
+
+All tokens defined in `tailwind.config.ts` and `src/app/globals.css` for dual access.

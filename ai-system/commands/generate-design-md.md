@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: v3 upgrade (generate-design-md)
-> - last-verified-against-code: (set on first run)
+> - last-verified-against-code: 2026-08-29
 > - staleness-policy: re-verify if the DESIGN.md convention or extraction skill changes
 
 > **Overview:** Extracts colors, typography, spacing, and component patterns from a reference URL (via the registered browsing tool, if available) or existing markup into a new `design-references/<name>/DESIGN.md`. Uses the `design-token-extraction` skill. Never writes `design-system.md` directly.

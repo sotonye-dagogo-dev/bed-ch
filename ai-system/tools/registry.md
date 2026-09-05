@@ -3,7 +3,7 @@
 > **Metadata**
 >
 > - last-updated-by: v3 upgrade (audit-sources)
-> - last-verified-against-code: (set on first run)
+> - last-verified-against-code: 2026-09-01
 > - staleness-policy: append-only; re-verify a row only when the resource is adopted or referenced
 
 > **Overview:** Master table of every external tool, repo, and reference resource evaluated for this system. One row per resource, kept terse (one line each — longer notes belong in the matching `tools/integrations/*.md` doc for adopted resources). **This is Tier 3 (on-demand).** Read it before doing by hand anything a registered tool does better — a live-preview browse, PDF text extraction, a design-reference check (per `protocols/entry-protocol.md`).

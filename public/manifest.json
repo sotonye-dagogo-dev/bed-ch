@@ -1,0 +1,22 @@
+{
+  "name": "Bedroom Chapters — Everything Your Bedroom Needs",
+  "short_name": "BedChapters",
+  "description": "Shop quality bedding, pillows, rugs, curtains, and bedroom essentials. Pay on delivery available.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8FBC8F",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

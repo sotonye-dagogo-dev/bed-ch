@@ -1,50 +1,27 @@
-# In-Progress Work
+# In Progress
 
 > **Metadata**
 >
-> - last-updated-by: (set by whichever command is running)
-> - last-verified-against-code: (set on write)
-> - staleness-policy: this file is overwritten every session — always current
-
-> **Overview:** Tracks work that is currently in progress but not yet complete. Written _before_ starting risky multi-step work, cleared on clean completion. This is the first file `resume-session.md` reads on interruption — it is the single source of truth for "what was half-done."
-
----
-
-## Current State
-
-**Status:** [ Not Started / In Progress / Suspended ]
-
-**Command Being Executed:**
-[command-name.md]
-
-**Directive / Task:**
-[the original directive or task description]
-
-**Steps Completed:**
-
-- [step 1]
-- [step 2]
-
-**Current Step:**
-[what is being worked on right now]
-
-**Files Modified So Far:**
-
-- [file path] — [what changed]
-
-**Checkpoint Context:**
-[any state that must be preserved for the next session — variables, intermediate values, decisions made during this work]
-
-**Last Tool Output / Error:**
-[if the session was interrupted mid-operation, what was the last thing that happened]
+> - last-updated-by: update-ai-system
+> - last-verified-against-code: 2026-09-01
+> - staleness-policy: overwrite on every session start; clear on session end
+>
+> **Overview:** Current work state. Singular, overwritten each session. Cleared when work completes.
 
 ---
 
-## Drift Check
+## Current Session
 
-**Last verified against repo:** [timestamp]
-**Any known drift between ai-system docs and actual code:** [yes/no — describe]
+**Status:** Sprints 1-3 Complete — Deep sync performed (2026-09-01)
+
+**Active Task:** Documentation sync complete. 1 HIGH drift remains: catalog queries still mocks.
+
+**Plan:** Next session: Migrate `src/lib/db/products.ts`, `chapters.ts`, `categories.ts` to real Prisma (P0). Then validations.ts, analytics events, tests/CI/CD, polish pending items.
+
+**Context:** Sprints 1-3 delivered cart (real Prisma + session cookie), orders (Tx + stock), Paystack (init/verify/webhook HMAC), WhatsApp dynamic URLs, cart-context + server-actions, 6 API route groups, legal/SEO/polish. See DISCREPANCY_REPORT.md for drift details. Task-queue phases 3-5 marked ✅; phase 6 🔄 pending. See dev-history 2026-09-01 for metrics.
 
 ---
 
-_This file is overwritten on every new in-progress operation. Clear on clean completion._
+## Work in Progress (if any)
+
+*Awaiting P0: Catalog migration to Prisma + validations/analytics. Launch checklist tasks: cross-browser, production content, journal, live keys, Vercel.*
