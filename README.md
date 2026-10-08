@@ -49,8 +49,11 @@ cp .env.example .env
 # Edit .env with your configuration
 
 # Set up database
-npm run prisma:generate
-npm run prisma:push
+npm run db:generate
+npm run db:migrate        # production: applies prisma/migrations (incl. 000_init baseline)
+# ...or for local dev:
+npm run db:migrate:dev    # creates/apply migrations interactively
+npm run db:push           # prototyping only: syncs schema without migration files
 
 # Seed database with sample data
 npm run db:seed
@@ -149,15 +152,21 @@ Key models:
 ## Available Scripts
 
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run typecheck    # Run TypeScript type checking
-npm run prisma:generate  # Generate Prisma client
-npm run prisma:push      # Push schema to database
-npm run prisma:studio    # Open Prisma Studio
-npm run db:seed          # Seed database with sample data
+npm run dev            # Start development server
+npm run build          # Build for production (prisma generate + next build)
+npm run vercel-build   # Vercel build: generate client + deploy migrations + build
+npm run start          # Start production server
+npm run lint           # Run ESLint
+npm run typecheck      # Run TypeScript type checking
+npm run db:generate    # Generate Prisma client
+npm run db:migrate     # Deploy migrations (production)
+npm run db:migrate:dev # Create/apply migrations (local dev)
+npm run db:push        # Push schema directly (prototyping only)
+npm run db:deploy      # Resilient deploy: migrate -> db-push fallback (used by vercel-build)
+npm run db:status      # Show migration status
+npm run db:seed        # Seed database with sample data
+npm run db:setup       # generate + migrate + seed (fresh environment)
+npm run prisma:studio  # Open Prisma Studio
 ```
 
 ## Deployment
@@ -166,8 +175,45 @@ npm run db:seed          # Seed database with sample data
 
 1. Push to GitHub
 2. Import project in Vercel
-3. Add environment variables
-4. Deploy
+3. Add environment variables (including `DATABASE_URL`)
+4. Deploy — the `vercel-build` script automatically runs `prisma generate` and
+   `node scripts/db-deploy.mjs` (which tries `prisma migrate deploy` first and
+   falls back to `prisma db push`) before `next build`, so no extra configuration
+   is needed. If `DATABASE_URL` is missing, the deploy step warns and lets the
+   build continue; set `DB_DEPLOY_STRICT=true` in CI to fail hard instead.
+
+### Database migrations via GitHub Actions (optional, manual setup)
+
+> Not committed under `.github/workflows/` by automation: the GitHub App used by
+> automation lacks the `workflows` permission, so workflow files must be added
+> manually by a maintainer. To run migrations from repo secrets on every push to
+> `main` (as an alternative to the Vercel-build fallback), create
+> `.github/workflows/db-migrate.yml` with:
+
+```yaml
+name: db-migrate
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run db:deploy:strict
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+```
+
+With this in place, migrations run from repo secrets; the `vercel-build`
+migration step then acts as the fallback (it becomes a no-op when the DB is
+already up to date).
 
 ### Database
 
