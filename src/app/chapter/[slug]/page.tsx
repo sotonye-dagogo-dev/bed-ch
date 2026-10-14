@@ -11,11 +11,22 @@ import { getProductsByChapter } from '@/lib/db/products';
 import { formatPrice, formatCurrency } from '@/lib/utils';
 
 interface ChapterPageProps {
-  params: Promise<{ slug: string }>;
+  // Next 14 passes a plain object, Next 15 passes a Promise — accept both.
+  params: Promise<{ slug: string }> | { slug: string };
+}
+
+async function resolveSlug(params: ChapterPageProps['params']): Promise<string> {
+  try {
+    const resolved = await Promise.resolve(params);
+    return resolved?.slug ?? '';
+  } catch {
+    return '';
+  }
 }
 
 export async function generateMetadata({ params }: ChapterPageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const slug = await resolveSlug(params);
+  if (!slug) return { title: 'Chapter Not Found' };
   const chapter = await getChapterBySlug(slug);
   
   if (!chapter) {
@@ -34,14 +45,31 @@ export async function generateMetadata({ params }: ChapterPageProps): Promise<Me
 }
 
 export default async function ChapterPage({ params }: ChapterPageProps) {
-  const { slug } = await params;
-  const chapter = await getChapterBySlug(slug);
+  const slug = await resolveSlug(params);
+
+  if (!slug) {
+    notFound();
+  }
+
+  let chapter: Awaited<ReturnType<typeof getChapterBySlug>> = null;
+  try {
+    chapter = await getChapterBySlug(slug);
+  } catch {
+    // DB unavailable during prerender / edge — surface the segment
+    // error boundary instead of an opaque null.get crash.
+    throw new Error('Failed to load chapter. Please try again.');
+  }
 
   if (!chapter) {
     notFound();
   }
 
-  const products = await getProductsByChapter(slug, 20);
+  let products: Awaited<ReturnType<typeof getProductsByChapter>> = [];
+  try {
+    products = await getProductsByChapter(slug, 20);
+  } catch {
+    products = [];
+  }
 
   const bundleSavings = chapter.bundleOffer
     ? chapter.bundleOffer.productIds.reduce((sum, pid) => {

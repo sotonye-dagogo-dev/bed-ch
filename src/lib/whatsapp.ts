@@ -1,4 +1,6 @@
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '2348012345678';
+import { getWhatsAppNumber } from '@/config/site';
+
+const WHATSAPP_NUMBER = getWhatsAppNumber();
 
 export interface OrderForWhatsApp {
   orderNumber: string;

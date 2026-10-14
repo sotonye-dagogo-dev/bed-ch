@@ -61,7 +61,12 @@ export async function getCartAction() {
 
 export async function checkoutAction(formData: FormData) {
   try {
-    const sessionId = cookies().get('sessionId')?.value;
+    let sessionId: string | undefined;
+    try {
+      sessionId = cookies()?.get?.('sessionId')?.value;
+    } catch {
+      sessionId = undefined;
+    }
     if (!sessionId) {
       return { success: false, error: 'No active session' };
     }
@@ -81,17 +86,25 @@ export async function checkoutAction(formData: FormData) {
       }
     }
 
-    // Create order data from form
+    // Create order data from form (null-safe FormData reads)
+    const str = (key: string): string => {
+      try {
+        const v = formData?.get?.(key);
+        return typeof v === 'string' ? v : '';
+      } catch {
+        return '';
+      }
+    };
     const orderData = {
-      customerName: `${formData.get('firstName')} ${formData.get('lastName')}`,
-      customerPhone: formData.get('phone') as string,
-      customerEmail: formData.get('email') as string || undefined,
-      address: formData.get('address') as string,
-      city: formData.get('city') as string,
-      state: formData.get('state') as string,
-      deliveryOption: formData.get('deliveryOption') as 'STANDARD' | 'EXPRESS_LAGOS' | 'PAY_ON_DELIVERY',
-      paymentMethod: formData.get('paymentMethod') as 'PAYSTACK_CARD' | 'PAYSTACK_TRANSFER' | 'PAYSTACK_USSD' | 'PAY_ON_DELIVERY',
-      notes: formData.get('notes') as string || undefined,
+      customerName: `${str('firstName')} ${str('lastName')}`,
+      customerPhone: str('phone') as string,
+      customerEmail: str('email') || undefined,
+      address: str('address') as string,
+      city: str('city') as string,
+      state: str('state') as string,
+      deliveryOption: str('deliveryOption') as 'STANDARD' | 'EXPRESS_LAGOS' | 'PAY_ON_DELIVERY',
+      paymentMethod: str('paymentMethod') as 'PAYSTACK_CARD' | 'PAYSTACK_TRANSFER' | 'PAYSTACK_USSD' | 'PAY_ON_DELIVERY',
+      notes: str('notes') || undefined,
       items: cart.items.map(item => ({
         variantId: item.variantId,
         quantity: item.quantity,

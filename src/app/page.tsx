@@ -7,29 +7,29 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { getBestsellers } from '@/lib/db/products';
 import { getActiveChapters } from '@/lib/db/chapters';
 import { formatPrice } from '@/lib/utils';
+import { siteConfig } from '@/config/site';
 
 export const metadata: Metadata = {
   title: 'Everything Your Bedroom Needs',
   description: 'Shop quality bedding, pillows, rugs, curtains, and bedroom essentials. Pay on delivery in Lagos, Abuja & PH. Same-day delivery in Lagos. 7-day returns.',
 };
 
-const chapters = [
-  { name: 'Nursery', slug: 'nursery', emoji: '👶', description: 'Safe, soft, practical' },
-  { name: 'Newlywed', slug: 'newlywed', emoji: '💍', description: 'Luxury for two' },
-  { name: 'Teen', slug: 'teen', emoji: '🎮', description: 'Bold & functional' },
-  { name: 'Guest', slug: 'guest', emoji: '🏨', description: 'Five-star comfort' },
-  { name: 'Master', slug: 'master', emoji: '👑', description: 'Hotel-quality sleep' },
-  { name: 'Minimalist', slug: 'minimalist', emoji: '🤍', description: 'Calm & clutter-free' },
-  { name: 'Boho', slug: 'boho', emoji: '🌿', description: 'Layered & collected' },
-  { name: 'Modern', slug: 'modern', emoji: '⚡', description: 'Sleek & smart' },
-  { name: 'Kids', slug: 'kids', emoji: '🧸', description: 'Fun & durable' },
-];
+const chapters = siteConfig.chapters;
 
 export default async function HomePage() {
-  const [bestsellers, activeChapters] = await Promise.all([
-    getBestsellers(12),
-    getActiveChapters(9),
-  ]);
+  // Degrade gracefully (skeleton fallbacks below) if the DB is
+  // unreachable during prerender — never crash the route.
+  let bestsellers: Awaited<ReturnType<typeof getBestsellers>> = [];
+  let activeChapters: Awaited<ReturnType<typeof getActiveChapters>> = [];
+  try {
+    [bestsellers, activeChapters] = await Promise.all([
+      getBestsellers(12),
+      getActiveChapters(9),
+    ]);
+  } catch {
+    bestsellers = [];
+    activeChapters = [];
+  }
 
   return (
     <div className="space-y-16">
@@ -73,7 +73,7 @@ export default async function HomePage() {
                 Shop by Product
               </Link>
               <Link
-                href="/shop"
+                href={siteConfig.chapterTeaserHref}
                 className="inline-flex items-center justify-center gap-2 font-semibold rounded-md transition-all duration-fast focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px] bg-transparent border-2 border-primary text-primary hover:bg-primary/10 active:bg-primary/20 h-14 px-8 text-lg w-full sm:w-auto"
               >
                 <Compass className="h-5 w-5" aria-hidden="true" />
@@ -118,7 +118,7 @@ export default async function HomePage() {
       </section>
 
       {/* Chapter Teaser */}
-      <section aria-labelledby="chapters-heading" className="py-10">
+      <section aria-labelledby="chapters-heading" className="py-10" id="chapters">
         <div className="container-custom">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -128,7 +128,7 @@ export default async function HomePage() {
               <p className="text-text-muted mt-1">Find your bedroom style</p>
             </div>
             <Link
-              href="/shop"
+              href={siteConfig.chapterTeaserHref}
               className="inline-flex items-center gap-1 font-medium text-text-muted hover:text-primary transition-colors"
             >
               View all chapters
@@ -198,7 +198,7 @@ function ChapterCard({ chapter }: { chapter: { id: string; name: string; slug: s
             />
           ) : (
             <div className="w-full h-full bg-border flex items-center justify-center">
-              <span className="text-4xl">{chapters.find(c => c.slug === chapter.slug)?.emoji}</span>
+              <span className="text-4xl">{chapters.find(c => c.slug === chapter.slug)?.icon}</span>
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />

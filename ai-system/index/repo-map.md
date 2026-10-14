@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: re-verify if folder structure changes
 >
 > **Overview:** Folder structure with purpose of each directory. Auto-regenerable via script.
@@ -119,15 +119,20 @@ ai-system/
 src/
 ├── app/                       # Next.js App Router pages
 │   ├── globals.css            # Global styles + CSS variables
-│   ├── layout.tsx             # Root layout (providers, cart context, header, footer, trust bar, analytics)
-│   ├── global-error.tsx       # Global error boundary (useEffect logging, retry)
-│   ├── page.tsx               # Homepage (hero, search, bestsellers, chapter teaser)
+│   ├── layout.tsx             # Root layout (providers, header, footer, trust bar, WhatsApp float, analytics)
+│   ├── error.tsx              # Root segment error boundary (reload + retry + home)
+│   ├── global-error.tsx       # Global error boundary (full reload + home)
+│   ├── page.tsx               # Homepage (hero, search, bestsellers, chapter teaser, config-driven)
 │   ├── shop/
-│   │   └── page.tsx           # Shop listing with filters, product grid, pagination
+│   │   ├── page.tsx           # Shop listing with filters, sort (client), grid, pagination
+│   │   ├── error.tsx          # Shop segment error boundary
+│   │   └── [category]/page.tsx # Legacy /shop/<slug> → canonical /shop?category=<slug> redirect
 │   ├── product/
 │   │   └── [id]/page.tsx      # Product detail (gallery, variants, add-to-cart, complete the look)
 │   ├── chapter/
-│   │   └── [slug]/page.tsx    # Chapter page (hero, curated products, bundle offer)
+│   │   └── [slug]/
+│   │       ├── page.tsx       # Chapter page (hero, curated products, bundle offer)
+│   │       └── error.tsx      # Chapter segment error boundary
 │   ├── cart/
 │   │   ├── layout.tsx         # Cart layout wrapper
 │   │   └── page.tsx           # Full-page cart (client, useCart hook, real totals)
@@ -143,9 +148,9 @@ src/
 │   │       └── success/
 │   │           ├── page.tsx                # Success page wrapper
 │   │           └── OrderSuccessContent.tsx # Confetti, order summary, WhatsApp links
-│   ├── terms/page.tsx         # Legal: Terms of Service (Nigerian consumer law)
-│   ├── privacy/page.tsx       # Legal: Privacy Policy
-│   ├── delivery-returns/page.tsx # Legal: Delivery & Returns (fees, POD rules)
+│   ├── terms/page.tsx         # Legal: Terms (content only — chrome comes from root layout)
+│   ├── privacy/page.tsx       # Legal: Privacy Policy (content only)
+│   ├── delivery-returns/page.tsx # Legal: Delivery & Returns (content only)
 │   └── api/                   # API Routes (NEW - Sprint 1-2)
 │       ├── cart/
 │       │   ├── route.ts       # GET cart, POST add, DELETE clear
@@ -166,22 +171,25 @@ src/
 │   │   ├── Skeleton.tsx       # Loading placeholders
 │   │   └── index.ts           # Barrel export
 │   ├── layout/                # Layout components
-│   │   ├── Header.tsx         # Sticky header (logo, search, cart via useCart, mobile menu)
-│   │   ├── Footer.tsx         # Footer with links, trust badges, WhatsApp CTA, social
-│   │   ├── TrustBar.tsx       # Fixed bottom mobile: Same-Day, POD, Returns
+│   │   ├── Header.tsx         # Sticky header (logo, search, cart via useCart, mobile menu; config-driven nav)
+│   │   ├── Footer.tsx         # Footer (trust badges → WhatsApp CTA → link grid → bottom bar; config-driven)
+│   │   ├── TrustBar.tsx       # Fixed bottom mobile-only trust strip (desktop covered by Footer)
 │   │   └── index.ts           # Barrel export
 │   ├── product/               # Product-specific components
 │   │   ├── ProductGrid.tsx    # Responsive grid of ProductCard
-│   │   ├── FilterSidebar.tsx  # Collapsible filters (category, price, size, color, chapter)
+│   │   ├── FilterSidebar.tsx  # Collapsible filters (mount-guarded viewport, null-safe URLs)
+│   │   ├── ShopSortSelect.tsx # Client-only sort control (router + null-safe searchParams)
 │   │   └── index.ts           # Barrel export
 │   ├── cart/                  # Cart & checkout components
 │   │   └── CartSlideOut.tsx   # Slide-out cart (client, useCart, real totals)
 │   ├── empty/
 │   │   └── EmptyState.tsx     # Empty states: cart, products, search, generic
 │   ├── error/
-│   │   └── ErrorBoundary.tsx  # Class component, retry + home CTA
+│   │   ├── ErrorBoundary.tsx  # Class component, retry + home CTA
+│   │   ├── RouteError.tsx     # Shared segment error UI (reload + retry + home)
+│   │   └── index.ts           # Barrel export
 │   ├── whatsapp/              # WhatsApp integration
-│   │   └── WhatsAppFloatButton.tsx  # Floating chat button with pulse + tooltip
+│   │   └── WhatsAppFloatButton.tsx  # Viewport-fixed chat button (bottom-24 mobile / bottom-6 desktop, z-50)
 │   ├── analytics/             # Analytics providers
 │   │   ├── GA4.tsx
 │   │   ├── MetaPixel.tsx
@@ -191,17 +199,21 @@ src/
 ├── lib/                       # Core utilities & data access
 │   ├── prisma.ts              # Prisma client singleton
 │   ├── cart-context.tsx       # CartContext (useCart hook, fetch /api/cart)
-│   ├── server-actions.ts      # Server Actions (addToCart, checkoutAction with redirect)
+│   ├── server-actions.ts      # Server Actions (addToCart, checkoutAction with redirect; null-safe)
 │   ├── paystack.ts            # Paystack client (initialize, verify, webhook)
-│   ├── whatsapp.ts            # WhatsApp URL generators (customer/admin)
+│   ├── whatsapp.ts            # WhatsApp URL generators (delegates number to config/site)
+│   ├── validations.ts         # Zod checkoutSchema + POD business rules
+│   ├── analytics.ts           # Analytics event helpers (trackAddToCart)
 │   ├── db/
-│   │   ├── products.ts        # Product queries (STILL MOCK - not migrated to Prisma)
-│   │   ├── chapters.ts        # Chapter queries (STILL MOCK)
-│   │   ├── categories.ts      # Category queries (STILL MOCK)
-│   │   ├── cart.ts            # Cart queries (REAL Prisma: getCart, add, update, remove)
+│   │   ├── products.ts        # Product queries (REAL Prisma — drift resolved)
+│   │   ├── chapters.ts        # Chapter queries (REAL Prisma — drift resolved)
+│   │   ├── categories.ts      # Category queries (REAL Prisma — drift resolved)
+│   │   ├── cart.ts            # Cart queries (REAL Prisma + null-safe session)
 │   │   └── orders.ts          # Order queries (REAL Prisma: createOrder Tx, stock decrement)
 │   ├── utils.ts               # Formatters, validators, NIGERIAN_STATES, DELIVERY_OPTIONS
 │   └── index.ts               # Barrel export
+├── config/                    # Central site configuration (NEW 2026-10-14)
+│   └── site.ts                # siteConfig: nav, footer, trust, whatsapp, filters + href helpers
 ├── hooks/                     # Custom React hooks (not yet created - useCart lives in lib/cart-context)
 └── types/                     # TypeScript types (not yet created - using inline + Prisma generated)
 ```

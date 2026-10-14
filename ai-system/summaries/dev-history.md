@@ -2,11 +2,33 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: append-only; weekly summary entries
 >
 > **Overview:** Chronological summary of development milestones. Each entry: Date, Milestone, Summary, Metrics.
+
+---
+
+## 2026-10-14: MVP Tightening — Crash Fix, Config-Driven Links/Layout, Error Boundaries
+
+**Milestone:** Null-`get` route crash resolved; `src/config/site.ts` single source; footer/WhatsApp-float/error-boundary fixes; QA gate green
+
+**Summary:** Executed the MVP-tightening directive end-to-end. Root-caused `Cannot read properties of null (reading 'get')` on shop/chapter routes to unguarded `.get()` hosts + `window`/handlers in the Shop Server Component + a `FilterSidebar` hydration mismatch + dead `/shop/<slug>` links; fixed all with null-safe guards, client-leaf extraction (`ShopSortSelect`), mount-guarded viewport detection, and a `/shop/[category]` redirect segment. Corrected every shop-vs-chapter link (homepage/Header → `/#chapters` anchor; category links → canonical `/shop?category=`). Reordered Footer (trust → WhatsApp CTA → links → bottom bar, single tiles block, all config-driven), made TrustBar mobile-only to end desktop duplication, relocated the WhatsApp float to layout body-level (`bottom-24/z-50` mobile, `bottom-6` desktop) and offset the mobile search FAB. Added `error.tsx` segment boundaries sharing `RouteError` plus a real-reload `global-error`. Removed duplicate Header/Footer/TrustBar from legal pages and unified WhatsApp numbers via config. Also resolved two stale HIGH/MEDIUM drifts: catalog queries and `validations.ts` are real/present in code.
+
+**Key Accomplishments:**
+- `src/config/site.ts` — nav/footer/trust/whatsapp/filters + helpers; consumed by 10+ modules
+- Crash guards in 6 `.get` sites + 4 server pages with graceful degradation
+- 4 new files: `ShopSortSelect`, `shop/[category]`, `RouteError`, 3× `error.tsx` (+ error barrel)
+- `tests/unit/lib/site-config.test.ts` — 6 new tests
+
+**Metrics:**
+- Files added/modified: ~25 app/lib/config + 9 ai-system docs
+- QA: `tsc` ✅ · `next lint` 0 errors ✅ · vitest 15/15 ✅ · `next build` 24/24 pages ✅ (postbuild sitemap requires live `DATABASE_URL` — environmental, not code)
+
+**Known Gaps (post this session):**
+- Cross-browser testing, production photos, journal articles, live keys, Vercel deploy (unchanged, still open)
+- Sitemap postbuild unverified without DB; `/chapters` index deferred in favour of anchor
 
 ---
 

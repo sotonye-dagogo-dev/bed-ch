@@ -9,14 +9,27 @@ import { Select } from '@/components/ui/Select';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { getProductBySlug, getRelatedProducts } from '@/lib/db/products';
 import { formatPrice, NIGERIAN_STATES } from '@/lib/utils';
+import { shopCategoryHref } from '@/config/site';
 
 interface ProductPageProps {
-  params: Promise<{ id: string }>;
+  // Next 14 passes a plain object, Next 15 passes a Promise — accept both.
+  params: Promise<{ id: string }> | { id: string };
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const { id } = await params;
-  const product = await getProductBySlug(id);
+  let id = '';
+  try {
+    id = (await Promise.resolve(params))?.id ?? '';
+  } catch {
+    id = '';
+  }
+  if (!id) return { title: 'Product Not Found' };
+  let product: Awaited<ReturnType<typeof getProductBySlug>> = null;
+  try {
+    product = await getProductBySlug(id);
+  } catch {
+    return { title: 'Product Not Found' };
+  }
   
   if (!product) {
     return { title: 'Product Not Found' };
@@ -39,14 +52,33 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await params;
-  const product = await getProductBySlug(id);
+  let id = '';
+  try {
+    id = (await Promise.resolve(params))?.id ?? '';
+  } catch {
+    id = '';
+  }
+  if (!id) {
+    notFound();
+  }
+
+  let product: Awaited<ReturnType<typeof getProductBySlug>>;
+  try {
+    product = await getProductBySlug(id);
+  } catch {
+    throw new Error('Failed to load product. Please try again.');
+  }
 
   if (!product) {
     notFound();
   }
 
-  const relatedProducts = await getRelatedProducts(product.id, 4);
+  let relatedProducts: Awaited<ReturnType<typeof getRelatedProducts>> = [];
+  try {
+    relatedProducts = await getRelatedProducts(product.id, 4);
+  } catch {
+    relatedProducts = [];
+  }
   const discount = product.compareAt
     ? Math.round(((product.compareAt - product.price) / product.compareAt) * 100)
     : 0;
@@ -66,7 +98,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {product.category && (
             <>
               <ChevronRight className="h-4 w-4" aria-hidden="true" />
-              <a href={`/shop/${product.category.slug}`} className="hover:text-primary transition-colors">
+              <a href={shopCategoryHref(product.category.slug)} className="hover:text-primary transition-colors">
                 {product.category.name}
               </a>
             </>
@@ -117,7 +149,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="space-y-6">
             {product.category && (
               <div className="flex items-center gap-2 flex-wrap">
-                <a href={`/shop/${product.category.slug}`} className="text-sm text-text-muted hover:text-primary transition-colors">
+                <a href={shopCategoryHref(product.category.slug)} className="text-sm text-text-muted hover:text-primary transition-colors">
                   {product.category.name}
                 </a>
                 {product.chapter && (

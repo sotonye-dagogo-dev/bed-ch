@@ -153,4 +153,25 @@
 - ⚠️ Manual curation needed (mitigate: admin UI later)
 - ⚠️ 9 pages to maintain content for
 
+**Supersedes:** None (initial decision)
+
+---
+
+## 2026-10-14: Central Site Config + Canonical Query URLs
+
+**Decision:** Single `src/config/site.ts` drives all nav, footer, trust, WhatsApp and filter metadata; canonical shop-category URLs are query-based (`/shop?category=<slug>`); legacy `/shop/<slug>` paths redirect (new `shop/[category]` segment) instead of duplicating the catalogue; chapter entry points use the `/#chapters` homepage anchor.
+
+**Context:** MVP-tightening found 404s from `/shop/<slug>` links, shop-vs-chapter link mix-ups (homepage "Shop by Chapter" → `/shop`), three disagreeing WhatsApp numbers, and Footer/Header/Home hardcoding the same 9 chapters/8 categories.
+
+**Alternatives Considered:**
+- Duplicate catalogue rendering under `/shop/[category]`: two implementations to maintain, SEO duplicate-content risk — rejected
+- Full chapters index page (`/chapters`): new route + content burden for MVP — deferred, anchor covers entry
+- Leave hardcoded literals: drift recurs — rejected
+
+**Consequences:**
+- ✅ One edit point for links/badges/numbers; tests pin counts
+- ✅ No link 404s (redirect validates against config, then DB, else `notFound()`)
+- ✅ TrustBar made mobile-only (Footer tiles cover desktop) — removes bottom duplication; logged assumption, reversible
+- ⚠️ Legal pages lost their standalone chrome (now rely on root layout) — verified layout provides it on every route
+
 **Supersedes:** None

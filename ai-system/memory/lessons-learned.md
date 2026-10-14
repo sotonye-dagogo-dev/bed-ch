@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: append-only; never delete, only supersede with new entry linking back
 >
 > **Overview:** Debugging insights, patterns that worked/failed, gotchas discovered. Each entry: Situation, What Happened, Root Cause, Fix, Prevention.
@@ -276,3 +276,51 @@ if (!ga4Id || ga4Id === 'G-XXXXXXXXXX') return null;
 - Run `npm run build` locally to verify sitemap output before deploy
 - Add `public/sitemap*.xml` to .gitignore or commit generated? Currently committed — decide policy
 - Consider `next-sitemap` config instead if customization grows
+
+---
+
+## 2026-10-14: Null-Safe next/headers + SearchParams Guards
+
+**Situation:** Shop/chapter routes threw `Cannot read properties of null (reading 'get')` — all `.get()` call sites (`cookies().get`, `headers().get`, `searchParams.get`, `formData.get`) assumed non-null hosts.
+
+**What Happened:** Hardened every site: `getSessionId()` wraps `cookies()` in try/catch with `cookieStore?.get?.()` and guarded `.set()`; API routes null-check cookies/headers/formData with a safe string getter; `CheckoutCallbackContent` uses `searchParams?.get?.()`; server pages accept `Promise | plain` params and degrade (homepage → skeletons, shop/chapter → segment error boundary).
+
+**Root Cause:** Next prerender/edge contexts can yield null hosts; unguarded `.get` turns a recoverable miss into a route crash.
+
+**Fix:** Optional chaining + try/catch + typed fallbacks at every `.get` site; never let a null host throw.
+
+**Prevention:**
+- Grep `\.get\(` on every QA pass; each hit must have a null guard
+- Prefer small safe-getter helpers over inline chains
+
+---
+
+## 2026-10-14: No Event Handlers or window in Server Components
+
+**Situation:** Shop page (a Server Component) rendered `<select onChange={...window.location...}>` inline — functions/`window` cannot execute during server render and poisoned the route.
+
+**What Happened:** Extracted `ShopSortSelect.tsx` client component (`useRouter` + null-safe `useSearchParams`, Suspense fallback); fixed `FilterSidebar` hydration mismatch by deferring `window.innerWidth` detection until after mount (state + `useEffect`), so SSR and first client render match.
+
+**Root Cause:** Interactivity (`onChange`, `window`) placed directly in RSC instead of at a client leaf.
+
+**Fix:** Client leaves for all interactivity; SSR renders the static variant; mount-guarded viewport checks.
+
+**Prevention:**
+- RSC files must contain zero `window.`, `onChange=`, `onClick=` inline handlers — extract to `'use client'` leaves
+- Any `typeof window` check during render is a hydration-mismatch smell; use mounted state
+
+---
+
+## 2026-10-14: Single-Source Site Config (config-driven links)
+
+**Situation:** Categories, chapters, footer links, trust badges, WhatsApp numbers and filter metadata were hardcoded in 8+ files — Header had a `Function` category missing elsewhere, three WhatsApp fallbacks disagreed, `/shop/<slug>` links 404'd.
+
+**What Happened:** Created `src/config/site.ts` (`siteConfig` + `shopCategoryHref`/`chapterHref`/`getWhatsAppContactUrl`/`isKnownCategory`); refactored Header/Footer/TrustBar/WhatsAppFloat/homepage/shop/legal pages to import from it; added `tests/unit/lib/site-config.test.ts` (6 tests); canonical category URLs are query-based with a `/shop/[category]` redirect segment for legacy links.
+
+**Root Cause:** Copy-pasted literals across components with no shared module.
+
+**Fix:** One config module; canonical href helpers; redirect segment (not duplicate catalogue) for legacy paths.
+
+**Prevention:**
+- New links/badges/numbers go in `siteConfig` first, components second
+- `site-config.test.ts` pins counts (9 chapters / 8 categories / 3 badges) so drift breaks tests, not prod

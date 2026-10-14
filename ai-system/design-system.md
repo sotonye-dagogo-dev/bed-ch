@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: re-verify if design tokens or component library changes
 
 > **Overview:** UI/UX rules, design tokens, component patterns, and accessibility standards derived from the design brief.
@@ -175,7 +175,7 @@
 - **Header:** Sticky top, white bg, border-b, h-16, logo + search + cart + WhatsApp
 - **Search:** Expandable on mobile, full-width on desktop, placeholder "Search bedsheets, pillows..."
 - **Mobile Menu:** Slide-out sheet (not dropdown), categories + chapters + pages
-- **Trust Bar:** Fixed bottom on mobile (h-12), 3 badges: POD · Same-Day · Returns
+- **Trust Bar:** Fixed bottom on mobile (h-12), 3 badges: POD · Same-Day · Returns. Mobile-only (`md:hidden`) since 2026-10-14 — desktop renders the same badges once in the Footer from the shared `siteConfig.trustBadges` source (no duplicate tiles row).
 
 ### Cart Slide-Out
 
@@ -186,9 +186,9 @@
 
 ### WhatsApp Floating Button
 
-- Fixed bottom-right, 24px from edge (above trust bar on mobile)
+- Viewport-fixed bottom-right, rendered at layout body level (never inside header): `bottom-24 right-4 z-50` mobile (above fixed trust bar, clear of search FAB), `bottom-6 right-6` desktop
 - Circular, sage green bg, white WhatsApp icon, shadow-lg
-- Pulse animation (subtle, 2s infinite)
+- Pulse animation (subtle, 2s infinite; disabled under `prefers-reduced-motion`)
 - Tooltip on desktop hover: "Chat to order"
 
 ---

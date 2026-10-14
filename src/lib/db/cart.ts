@@ -39,18 +39,32 @@ export interface CartTotals {
 }
 
 function getSessionId(): string {
-  const cookieStore = cookies();
-  let sessionId = cookieStore.get('sessionId')?.value;
+  let sessionId: string | undefined;
+
+  try {
+    const cookieStore = cookies();
+    // Defensive: cookies() should never be null, but a null store used to
+    // throw "Cannot read properties of null (reading 'get')".
+    sessionId = cookieStore?.get?.('sessionId')?.value;
+  } catch {
+    sessionId = undefined;
+  }
 
   if (!sessionId) {
     sessionId = crypto.randomUUID();
-    cookieStore.set('sessionId', sessionId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 365, // 1 year
-      path: '/',
-    });
+    try {
+      const cookieStore = cookies();
+      cookieStore?.set?.('sessionId', sessionId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        path: '/',
+      });
+    } catch {
+      // Static prerender / edge contexts may forbid setting cookies —
+      // fall back to the in-memory id; callers still get a valid string.
+    }
   }
 
   return sessionId;

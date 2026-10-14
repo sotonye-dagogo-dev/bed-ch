@@ -4,8 +4,10 @@ import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { TrustBar } from '@/components/layout/TrustBar';
+import { WhatsAppFloatButton } from '@/components/whatsapp/WhatsAppFloatButton';
 import { AnalyticsProviders } from '@/components/analytics/AnalyticsProviders';
 import { CartProvider } from '@/lib/cart-context';
+import { siteConfig } from '@/config/site';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -26,7 +28,7 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  metadataBase: new URL(siteConfig.url),
   openGraph: {
     type: 'website',
     locale: 'en_NG',
@@ -98,6 +100,9 @@ export default function RootLayout({
           </main>
           <Footer />
           <TrustBar />
+          {/* Viewport-fixed floating contact button — rendered at body level
+              so it never inherits header stacking or alignment. */}
+          <WhatsAppFloatButton />
         </CartProvider>
       </body>
     </html>

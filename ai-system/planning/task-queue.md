@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-synced: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-synced: 2026-10-14
 > - staleness-policy: update after every session; re-prioritize weekly
 
 > **Overview:** Immediate actionable tasks. Pull from here for `dev-cycle.md` or `execute-feature.md`. Format: `[TAG] Task description — context/acceptance`
