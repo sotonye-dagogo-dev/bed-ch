@@ -12,4 +12,4 @@
 
 ## Current Session
 
-**Status:** Complete — MVP tightening delivered 2026-10-14. QA green (typecheck ✅, lint 0 errors, vitest 15/15, build 24/24). Docs synced via update-ai-system. Awaiting next directive.
+**Status:** Complete — mobile trust strip removed, tiles responsive/centered, `/chapters` index live with correct routing (2026-10-14). QA green (typecheck ✅, lint 0 errors, vitest 16/16, build ✅ with `/chapters` static; postbuild sitemap needs live DB — environmental). Docs synced via session-log. Awaiting next directive.

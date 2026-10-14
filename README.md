@@ -102,8 +102,7 @@ src/
 │   │   └── Skeleton.tsx
 │   ├── layout/            # Layout components
 │   │   ├── Header.tsx
-│   │   ├── Footer.tsx
-│   │   └── TrustBar.tsx
+│   │   └── Footer.tsx
 │   ├── product/           # Product components
 │   │   ├── ProductGrid.tsx
 │   │   └── FilterSidebar.tsx

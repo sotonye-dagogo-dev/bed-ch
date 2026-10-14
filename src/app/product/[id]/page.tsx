@@ -9,7 +9,7 @@ import { Select } from '@/components/ui/Select';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { getProductBySlug, getRelatedProducts } from '@/lib/db/products';
 import { formatPrice, NIGERIAN_STATES } from '@/lib/utils';
-import { shopCategoryHref } from '@/config/site';
+import { shopCategoryHref, siteConfig } from '@/config/site';
 
 interface ProductPageProps {
   // Next 14 passes a plain object, Next 15 passes a Promise — accept both.
@@ -247,11 +247,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </Button>
             </div>
 
-            {/* Trust Badges */}
-            <div className="grid grid-cols-3 gap-4 border-t border-border pt-6">
-              <TrustBadge icon={Truck} title="Lagos Same-Day" desc="Order before 12pm" />
-              <TrustBadge icon={Shield} title="Pay on Delivery" desc="Lagos, Abuja, PH ≤₦50k" />
-              <TrustBadge icon={RotateCcw} title="7-Day Returns" desc="No questions asked" />
+            {/* Trust Badges — config-driven, stacked + centered on mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-border pt-6">
+              {siteConfig.trustBadges.map((badge) => (
+                <TrustBadge
+                  key={badge.title}
+                  icon={TRUST_ICON_MAP[badge.icon] ?? Shield}
+                  title={badge.title}
+                  desc={badge.desc}
+                />
+              ))}
             </div>
 
             {/* Share */}
@@ -333,10 +338,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 }
 
+const TRUST_ICON_MAP = {
+  truck: Truck,
+  shield: Shield,
+  returns: RotateCcw,
+} as const;
+
 function TrustBadge({ icon: Icon, title, desc }: { icon: React.ComponentType<{ className?: string }>; title: string; desc: string }) {
   return (
-    <div className="flex items-start gap-3 p-3 bg-trust-bg rounded-lg">
-      <Icon className="h-5 w-5 text-trust-text mt-0.5 flex-shrink-0" aria-hidden="true" />
+    <div className="flex flex-col items-center text-center gap-2 p-3 bg-trust-bg rounded-lg">
+      <Icon className="h-5 w-5 text-trust-text flex-shrink-0" aria-hidden="true" />
       <div>
         <p className="font-medium text-trust-text text-sm">{title}</p>
         <p className="text-trust-text/80 text-xs">{desc}</p>

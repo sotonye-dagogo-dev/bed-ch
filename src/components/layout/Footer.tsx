@@ -23,9 +23,9 @@ const TRUST_ICONS = {
  * 4. Bottom bar
  *
  * All links, badges and contact details come from `siteConfig` — no
- * hardcoded slugs, numbers or tiles. There is exactly one trust-tiles
- * block here; the mobile TrustBar is a separate fixed strip, hidden on
- * desktop to avoid a redundant second display below the footer.
+ * hardcoded slugs, numbers or tiles. Trust tiles are the only rendering
+ * of the guarantees (the former mobile fixed TrustBar strip was removed):
+ * stacked + center-aligned on small screens, 3-column on sm+.
  */
 export function Footer() {
   const shopLinks = [
@@ -45,15 +45,15 @@ export function Footer() {
     <footer className="bg-bg border-t border-border" role="contentinfo">
       <div className="container-custom py-12 lg:py-16">
         {/* Trust Badges — the single sustained tiles block, before the links */}
-        <div className="grid grid-cols-3 gap-4 md:gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-12">
           {siteConfig.trustBadges.map((badge) => {
             const Icon = TRUST_ICONS[badge.icon] ?? Shield;
             return (
               <div
                 key={badge.title}
-                className="flex items-start gap-3 p-4 bg-trust-bg rounded-lg"
+                className="flex flex-col items-center text-center gap-2 p-4 sm:p-6 bg-trust-bg rounded-lg"
               >
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-trust-bg/50 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-trust-bg/50 flex items-center justify-center">
                   <Icon className="h-5 w-5 text-trust-text" aria-hidden="true" />
                 </div>
                 <div>

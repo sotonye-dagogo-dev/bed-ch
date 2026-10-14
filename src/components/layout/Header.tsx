@@ -62,7 +62,7 @@ export function Header() {
               Shop
             </Link>
 <Link
-            href={siteConfig.chapterTeaserHref}
+            href={siteConfig.chaptersIndexHref}
             className="hidden sm:block px-3 py-2 text-sm font-medium text-text-muted hover:text-text transition-colors relative"
           >
             Chapters
@@ -185,7 +185,7 @@ export function Header() {
       <Button
         variant="ghost"
         size="sm"
-        className="md:hidden fixed bottom-40 right-4 z-30 bg-bg border border-border rounded-full shadow-md"
+        className="md:hidden fixed bottom-24 right-4 z-30 bg-bg border border-border rounded-full shadow-md"
         onClick={() => setSearchOpen(!searchOpen)}
         aria-label="Search"
         aria-expanded={searchOpen}
