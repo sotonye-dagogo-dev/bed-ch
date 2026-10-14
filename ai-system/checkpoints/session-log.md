@@ -8,6 +8,35 @@
 
 > **Overview:** Append-only log of all AI-assisted development sessions. Each entry: Date, Agent/Command, Summary, Files Changed, Decisions Made, Next Steps.
 
+## 2026-10-14: Mobile Trust Strip Removal + Responsive Tiles + Chapters Index
+
+**Command:** `execute-feature.md`
+**Directive:** Remove mobile fixed tab (Lagos Same-Day / Pay on Delivery / 7-Day Returns); make the same-info component responsive (flex-col, centered); route the View-all-chapters link to where all chapters can be viewed.
+
+**Summary:** Removed the mobile-only fixed `TrustBar` strip entirely (deleted component, dropped layout usage + `pb-20` offset, cleaned README tree). Footer + product-page trust tiles are now the single rendering: `grid-cols-1 sm:grid-cols-3`, each tile `flex-col items-center text-center`. Product tiles now map `siteConfig.trustBadges` (was hardcoded). Added canonical `/chapters` index (DB-driven with config fallback, graceful degrade); homepage "View all chapters" + Header "Chapters" now route to `siteConfig.chaptersIndexHref` (`/chapters`); "Shop by Chapter" hero CTA keeps the `/#chapters` scroll anchor. Re-seated floating buttons for the freed bottom edge (WhatsApp float mobile `bottom-24`→`bottom-6`, header search FAB `bottom-40`→`bottom-24`). Sitemap static routes +1 (`/chapters`). QA: typecheck ✅, lint ✅ (0 errors, pre-existing img/unused warnings), tests 16/16 ✅, `next build` ✅ (`/chapters` static; postbuild sitemap needs live DB — environmental, pre-existing).
+
+**Files Created/Updated:**
+- `src/config/site.ts` — added `chaptersIndexHref: '/chapters'` (anchor kept for scroll CTAs)
+- `src/app/layout.tsx` — TrustBar import/usage removed, main `pb-20 md:pb-0` → `pt-16` only
+- `src/components/layout/TrustBar.tsx` — deleted; `src/components/layout/index.ts` — export dropped
+- `src/components/layout/Footer.tsx` — trust grid responsive + tiles flex-col centered
+- `src/app/product/[id]/page.tsx` — trust tiles config-driven via `TRUST_ICON_MAP`, responsive + centered
+- `src/app/chapters/page.tsx` — new index page (DB + config fallback)
+- `src/app/page.tsx` — "View all chapters" → `chaptersIndexHref`
+- `src/components/layout/Header.tsx` — Chapters nav → `chaptersIndexHref`, search FAB `bottom-40`→`bottom-24`
+- `src/components/whatsapp/WhatsAppFloatButton.tsx` — mobile `bottom-24`→`bottom-6`, contract comment updated
+- `scripts/generate-sitemap.cjs` — added `/chapters` static route
+- `tests/unit/lib/site-config.test.ts` — +1 test (`chaptersIndexHref`), 7 tests in file, 16 total
+- `README.md` — layout tree no longer lists TrustBar
+- ai-system: session-log (this entry); in-progress cleared
+
+**Next Steps:**
+1. Cross-browser testing, production content photos, 5 journal articles, live keys, Vercel deploy (still open in task-queue)
+2. Add `public/sitemap*.xml` gitignore policy decision
+3. Refresh generated ai-system index docs (repo-map/dependency-graph) to drop TrustBar references on next deep sync
+
+---
+
 ## 2026-10-14: MVP Tightening — Null-Get Crash, Routing, Footer, WhatsApp Float, Error Boundaries
 
 **Command:** `execute-feature.md`

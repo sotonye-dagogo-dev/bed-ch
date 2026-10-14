@@ -3,7 +3,6 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { TrustBar } from '@/components/layout/TrustBar';
 import { WhatsAppFloatButton } from '@/components/whatsapp/WhatsAppFloatButton';
 import { AnalyticsProviders } from '@/components/analytics/AnalyticsProviders';
 import { CartProvider } from '@/lib/cart-context';
@@ -95,11 +94,10 @@ export default function RootLayout({
         <AnalyticsProviders />
         <CartProvider>
           <Header />
-          <main className="flex-1 pt-16 pb-20 md:pb-0" id="main-content">
+          <main className="flex-1 pt-16" id="main-content">
             {children}
           </main>
           <Footer />
-          <TrustBar />
           {/* Viewport-fixed floating contact button — rendered at body level
               so it never inherits header stacking or alignment. */}
           <WhatsAppFloatButton />
