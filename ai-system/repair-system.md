@@ -87,6 +87,24 @@
 - Fix: Set `prismadb://...?connection_limit=1&pgbouncer=true` or use session pooling
 - Prevention: Configure connection string correctly for serverless
 
+**Migrations Run Against the Pooled URL (wrong datasource for migrate)**
+- Symptom: `prisma migrate` / `db push` hang, `P1001`, `prepared statement ... already exists`, or `CREATE INDEX CONCURRENTLY cannot run inside a transaction` against a pooler; `prisma migrate status` shows the pooler host/port (e.g. Supabase `:6543`) instead of the direct endpoint
+- Cause: `datasource` declares only `url = env("DATABASE_URL")` while the app uses a transaction-mode pooler; `directUrl` never wired, so Prisma Migrate reuses the runtime URL
+- Fix: Add `directUrl = env("DIRECT_URL")` to `datasource db` in `prisma/schema.prisma`; keep `url = env("DATABASE_URL")` for Prisma Client. Verify by running `prisma migrate status` and confirming it prints the direct/session-mode host:port
+- Prevention: Never point `prisma migrate` at a transaction-mode pooler. Declare both URLs in the schema, document both in `.env.example`, and validate `DIRECT_URL` in deploy scripts (`scripts/db-deploy.mjs` does this with a DATABASE_URL fallback for pooler-less setups)
+- Files Affected: `prisma/schema.prisma`, `.env.example`, `scripts/db-deploy.mjs`, `README.md`
+- Date: 2026-10-14
+- Status: Active
+
+**Deploy Script Skips Migrations Locally (`.env` not loaded)**
+- Symptom: `node scripts/db-deploy.mjs` prints `DATABASE_URL is not set. Skipping database deployment.` even though `.env` defines it; same script works on Vercel
+- Cause: Script read `process.env` directly without loading repo-root `.env` — CI/Vercel inject env vars, local shells do not
+- Fix: Parse repo-root `.env` in the script before reading vars, without overriding process env (dotenv semantics)
+- Prevention: Any standalone Node script that reads env vars must load `.env` itself — Next.js/Prisma CLI do it for their own commands, plain `node script.mjs` does not
+- Files Affected: `scripts/db-deploy.mjs`
+- Date: 2026-10-14
+- Status: Active
+
 ### Paystack Integration
 
 **Paystack Webhook Signature Verification Failed**

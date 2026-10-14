@@ -66,7 +66,8 @@ npm run dev
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
+| `DATABASE_URL` | PostgreSQL connection string — **runtime only** (Prisma Client, transaction-mode pooler) | Yes |
+| `DIRECT_URL` | Direct/session-mode PostgreSQL connection string — **migrations only** (`prisma migrate`, `db push`, Studio). Falls back to `DATABASE_URL` if unset | Yes (pooled setups) |
 | `PAYSTACK_SECRET_KEY` | Paystack secret key (server) | Yes |
 | `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Paystack public key (client) | Yes |
 | `PAYSTACK_WEBHOOK_SECRET` | Paystack webhook signature secret | Yes |
@@ -175,12 +176,16 @@ npm run prisma:studio  # Open Prisma Studio
 
 1. Push to GitHub
 2. Import project in Vercel
-3. Add environment variables (including `DATABASE_URL`)
+3. Add environment variables (including `DATABASE_URL` and `DIRECT_URL` —
+   `DATABASE_URL` is what the app's Prisma Client connects with, `DIRECT_URL`
+   is what `prisma migrate deploy` uses, both declared in `prisma/schema.prisma`)
 4. Deploy — the `vercel-build` script automatically runs `prisma generate` and
    `node scripts/db-deploy.mjs` (which tries `prisma migrate deploy` first and
    falls back to `prisma db push`) before `next build`, so no extra configuration
    is needed. If `DATABASE_URL` is missing, the deploy step warns and lets the
-   build continue; set `DB_DEPLOY_STRICT=true` in CI to fail hard instead.
+   build continue; set `DB_DEPLOY_STRICT=true` in CI to fail hard instead. If
+   `DIRECT_URL` is unset, migrations fall back to `DATABASE_URL` (only correct
+   when no pooler is in front of the database).
 
 ### Database migrations via GitHub Actions (optional, manual setup)
 
@@ -209,6 +214,7 @@ jobs:
       - run: npm run db:deploy:strict
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
 ```
 
 With this in place, migrations run from repo secrets; the `vercel-build`
