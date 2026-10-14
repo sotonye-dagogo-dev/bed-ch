@@ -4,7 +4,9 @@ import { getCategories } from '@/lib/db/categories';
 import { getChapters } from '@/lib/db/chapters';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { FilterSidebar } from '@/components/product/FilterSidebar';
+import { ShopSortSelect } from '@/components/product/ShopSortSelect';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { siteConfig } from '@/config/site';
 
 export const metadata: Metadata = {
   title: 'Shop All Products',
@@ -12,51 +14,77 @@ export const metadata: Metadata = {
 };
 
 interface ShopPageProps {
-  searchParams: Promise<{
-    category?: string;
-    chapter?: string;
-    minPrice?: string;
-    maxPrice?: string;
-    size?: string;
-    color?: string;
-    sortBy?: string;
-    page?: string;
-  }>;
+  // Next 14 passes a plain object, Next 15 passes a Promise — accept both.
+  searchParams:
+    | Promise<{
+        category?: string;
+        chapter?: string;
+        minPrice?: string;
+        maxPrice?: string;
+        size?: string;
+        color?: string;
+        sortBy?: string;
+        page?: string;
+      }>
+    | {
+        category?: string;
+        chapter?: string;
+        minPrice?: string;
+        maxPrice?: string;
+        size?: string;
+        color?: string;
+        sortBy?: string;
+        page?: string;
+      };
 }
 
 export default async function ShopPage({ searchParams }: ShopPageProps) {
-  const params = await searchParams;
+  // Next 14 passes a plain object, Next 15 passes a Promise — support both
+  // so routing never crashes on `await` / null reads.
+  const params = (await Promise.resolve(searchParams)) ?? {};
   const page = parseInt(params.page || '1');
   const limit = 12;
 
   const sortBy = params.sortBy as ProductFilters['sortBy'] | undefined;
 
-  const [productsData, categories, chapters] = await Promise.all([
-    getProducts({
-      category: params.category,
-      chapter: params.chapter,
-      minPrice: params.minPrice ? parseInt(params.minPrice) * 100 : undefined,
-      maxPrice: params.maxPrice ? parseInt(params.maxPrice) * 100 : undefined,
-      sizes: params.size ? [params.size] : undefined,
-      colors: params.color ? [params.color] : undefined,
-      sortBy,
-      page,
-      limit,
-    }),
-    getCategories(),
-    getChapters(),
-  ]);
+  // Null-safe data load: a DB/prerender failure renders the empty state
+  // (via the segment error boundary on throw) instead of an opaque crash.
+  let productsData: Awaited<ReturnType<typeof getProducts>>;
+  let categories: Awaited<ReturnType<typeof getCategories>> = [];
+  let chapters: Awaited<ReturnType<typeof getChapters>> = [];
+  try {
+    [productsData, categories, chapters] = await Promise.all([
+      getProducts({
+        category: params.category,
+        chapter: params.chapter,
+        minPrice: params.minPrice ? parseInt(params.minPrice) * 100 : undefined,
+        maxPrice: params.maxPrice ? parseInt(params.maxPrice) * 100 : undefined,
+        sizes: params.size ? [params.size] : undefined,
+        colors: params.color ? [params.color] : undefined,
+        sortBy,
+        page,
+        limit,
+      }),
+      getCategories(),
+      getChapters(),
+    ]);
+  } catch {
+    throw new Error('Failed to load products. Please try again.');
+  }
 
-  const priceRanges = [
-    { label: 'Under ₦5,000', min: 0, max: 500000 },
-    { label: '₦5,000 - ₦15,000', min: 500000, max: 1500000 },
-    { label: '₦15,000 - ₦30,000', min: 1500000, max: 3000000 },
-    { label: '₦30,000 - ₦50,000', min: 3000000, max: 5000000 },
-    { label: 'Over ₦50,000', min: 5000000, max: 10000000 },
-  ];
+  const priceRanges = siteConfig.filters.priceRanges;
 
-  const sizes = ['Single', 'Double', 'Queen', 'King', 'Standard', '120x170cm', '160x230cm', '140x240cm', '45cm', '180cm'];
-  const colors = ['White', 'Sage', 'Natural', 'Cream', 'Grey', 'Black', 'Neutral'];
+  const sizes = siteConfig.filters.sizes;
+  const colors = siteConfig.filters.colors;
+
+  const buildPageHref = (targetPage: number): string => {
+    const entries = Object.entries(params ?? {}).filter(
+      ([, v]) => v !== undefined && v !== '',
+    ) as [string, string][];
+    const qs = new URLSearchParams(entries);
+    qs.set('page', String(targetPage));
+    return `?${qs.toString()}`;
+  };
 
   return (
     <div className="pt-8 pb-16">
@@ -110,22 +138,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
               <p className="text-sm text-text-muted">
                 Showing {productsData.products.length} of {productsData.total} products
               </p>
-              <select
-                className="w-full sm:w-auto h-10 px-4 bg-bg border border-border rounded-md text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
-                defaultValue={params.sortBy || 'newest'}
-                onChange={(e) => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('sortBy', e.target.value);
-                  url.searchParams.delete('page');
-                  window.location.href = url.toString();
-                }}
-                aria-label="Sort products"
-              >
-                <option value="newest">Newest</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="bestselling">Best Selling</option>
-              </select>
+              <ShopSortSelect defaultValue={params.sortBy || 'newest'} />
             </div>
 
             {/* Product Grid */}
@@ -138,7 +151,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
                   <nav className="mt-10 flex items-center justify-center gap-2" aria-label="Pagination">
                     {page > 1 && (
                       <a
-                        href={`?${new URLSearchParams({ ...params, page: String(page - 1) })}`}
+                        href={buildPageHref(page - 1)}
                         className="px-4 py-2 border border-border rounded-md text-text hover:bg-bg-subtle transition-colors"
                         aria-label="Previous page"
                       >
@@ -150,7 +163,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
                     </span>
                     {page < productsData.totalPages && (
                       <a
-                        href={`?${new URLSearchParams({ ...params, page: String(page + 1) })}`}
+                        href={buildPageHref(page + 1)}
                         className="px-4 py-2 border border-border rounded-md text-text hover:bg-bg-subtle transition-colors"
                         aria-label="Next page"
                       >

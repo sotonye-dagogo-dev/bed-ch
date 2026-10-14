@@ -22,9 +22,21 @@ export function CheckoutCallbackContent() {
   } | null>(null);
 
   useEffect(() => {
-    const reference = searchParams.get('reference');
-    const orderId = searchParams.get('orderId');
-    const trxref = searchParams.get('trxref');
+    // useSearchParams() can be null during static prerender / missing
+    // Suspense — guard so we never throw "Cannot read properties of
+    // null (reading 'get')".
+    let reference: string | null = null;
+    let orderId: string | null = null;
+    let trxref: string | null = null;
+    try {
+      reference = searchParams?.get?.('reference') ?? null;
+      orderId = searchParams?.get?.('orderId') ?? null;
+      trxref = searchParams?.get?.('trxref') ?? null;
+    } catch {
+      reference = null;
+      orderId = null;
+      trxref = null;
+    }
 
     // Paystack redirects with either reference or trxref
     const paymentRef = reference || trxref;

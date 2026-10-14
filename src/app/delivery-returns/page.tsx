@@ -1,9 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { TrustBar } from '@/components/layout/TrustBar';
+import { getWhatsAppContactUrl } from '@/config/site';
 import { Truck, Shield, RotateCcw, Clock, MapPin, CreditCard } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -41,8 +39,7 @@ export default function DeliveryReturnsPage() {
 
   return (
     <>
-      <Header />
-      <main className="pt-20 pb-16 px-4">
+      <div className="pt-8 pb-16 px-4">
         <div className="container-custom max-w-4xl">
           <h1 className="text-3xl font-bold text-text mb-8">Delivery & Returns</h1>
 
@@ -171,7 +168,7 @@ export default function DeliveryReturnsPage() {
             <div className="bg-bg-subtle rounded-lg p-6">
               <h3 className="text-lg font-semibold text-text mb-4">How to Initiate a Return</h3>
               <ol className="list-decimal list-inside text-text-muted space-y-3">
-                <li>Contact us via <Link href={generateWhatsAppContactUrl()} className="text-primary hover:underline">WhatsApp</Link> or email returns@bedroomchapters.ng</li>
+                <li>Contact us via <Link href={getWhatsAppContactUrl('Hello Bedroom Chapters! I have a question about delivery or returns.')} className="text-primary hover:underline">WhatsApp</Link> or email returns@bedroomchapters.ng</li>
                 <li>Provide your order number, item(s) to return, and reason</li>
                 <li>We'll provide return instructions and a return authorization number</li>
                 <li>Pack items securely in original packaging with all accessories</li>
@@ -227,14 +224,7 @@ export default function DeliveryReturnsPage() {
             </div>
           </section>
         </div>
-      </main>
-      <Footer />
-      <TrustBar />
+      </div>
     </>
   );
-}
-
-function generateWhatsAppContactUrl(): string {
-  const message = encodeURIComponent('Hello Bedroom Chapters! I have a question about delivery or returns.');
-  return `https://wa.me/2348012345678?text=${message}`;
 }

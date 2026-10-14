@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/Button';
@@ -51,6 +51,22 @@ export function FilterSidebar({
 }: FilterSidebarProps) {
   const [openSections, setOpenSections] = useState<string[]>(['categories', 'price']);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  // Defer viewport detection until after mount so the server render and the
+  // first client render match (avoids hydration mismatch on /shop).
+  const [isNarrowViewport, setIsNarrowViewport] = useState(false);
+
+  useEffect(() => {
+    const update = () => {
+      try {
+        setIsNarrowViewport(window.innerWidth < 1024);
+      } catch {
+        setIsNarrowViewport(false);
+      }
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const toggleSection = (section: string) => {
     setOpenSections((prev) =>
@@ -61,20 +77,34 @@ export function FilterSidebar({
   const hasActiveFilters = Object.values(currentFilters).some((v) => v !== undefined && v !== '');
 
   const buildFilterUrl = (updates: Record<string, string | undefined>) => {
-    const params = new URLSearchParams(window.location.search);
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value);
-      } else {
-        params.delete(key);
-      }
-    });
-    params.delete('page');
-    return `?${params.toString()}`;
+    try {
+      const params = new URLSearchParams(
+        typeof window !== 'undefined' ? window.location.search : '',
+      );
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value) {
+          params.set(key, value);
+        } else {
+          params.delete(key);
+        }
+      });
+      params.delete('page');
+      return `?${params.toString()}`;
+    } catch {
+      return '/shop';
+    }
+  };
+
+  const navigate = (url: string) => {
+    try {
+      window.location.href = url;
+    } catch {
+      /* navigation unavailable */
+    }
   };
 
   const clearAllFilters = () => {
-    window.location.href = '/shop';
+    navigate('/shop');
   };
 
   const SidebarContent = () => (
@@ -274,7 +304,9 @@ export function FilterSidebar({
     </div>
   );
 
-  if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+  // Render the desktop variant until mounted (matches SSR), then switch
+  // to the mobile sheet when the viewport is narrow.
+  if (isNarrowViewport) {
     return (
       <>
         <Button

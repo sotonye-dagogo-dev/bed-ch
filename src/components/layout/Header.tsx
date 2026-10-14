@@ -2,36 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Menu, X, Search, MessageCircle } from 'lucide-react';
+import { ShoppingCart, Menu, Search, MessageCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
 import { CartSlideOut } from '@/components/cart/CartSlideOut';
-import { WhatsAppFloatButton } from '@/components/whatsapp/WhatsAppFloatButton';
 import { CartProvider, useCart } from '@/lib/cart-context';
+import {
+  siteConfig,
+  shopCategoryHref,
+  chapterHref,
+  getWhatsAppContactUrl,
+} from '@/config/site';
 
-const categories = [
-  { name: 'Bedding', slug: 'bedding', icon: '🛏️' },
-  { name: 'Pillows', slug: 'pillows', icon: '🛌' },
-  { name: 'Rugs', slug: 'rugs', icon: '🧵' },
-  { name: 'Curtains', slug: 'curtains', icon: '🪟' },
-  { name: 'Lighting', slug: 'lighting', icon: '💡' },
-  { name: 'Storage', slug: 'storage', icon: '📦' },
-  { name: 'Nightwear', slug: 'nightwear', icon: '👕' },
-  { name: 'Function', slug: 'function', icon: '🔧' },
-];
+const categories = siteConfig.categories;
 
-const chapters = [
-  { name: 'Nursery', slug: 'nursery' },
-  { name: 'Newlywed', slug: 'newlywed' },
-  { name: 'Teen', slug: 'teen' },
-  { name: 'Guest', slug: 'guest' },
-  { name: 'Master', slug: 'master' },
-  { name: 'Minimalist', slug: 'minimalist' },
-  { name: 'Boho', slug: 'boho' },
-  { name: 'Modern', slug: 'modern' },
-  { name: 'Kids', slug: 'kids' },
-];
+const chapters = siteConfig.chapters;
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -76,19 +62,19 @@ export function Header() {
               Shop
             </Link>
 <Link
-            href="/shop"
+            href={siteConfig.chapterTeaserHref}
             className="hidden sm:block px-3 py-2 text-sm font-medium text-text-muted hover:text-text transition-colors relative"
           >
             Chapters
             <span className="absolute -top-1 -right-1 bg-primary text-text-inverse text-xs px-1.5 py-0.5 rounded-full">
-              9
+              {chapters.length}
             </span>
           </Link>
 
           <CartButton onClick={() => setCartOpen(true)} />
 
           <a
-              href="https://wa.me/234XXXXXXXXXX"
+              href={getWhatsAppContactUrl()}
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-1.5 text-text font-medium px-3 py-2 rounded-md hover:bg-bg-subtle transition-colors min-h-[44px]"
@@ -130,7 +116,7 @@ export function Header() {
                 {categories.map((cat) => (
                   <li key={cat.slug}>
                     <Link
-                      href={`/shop/${cat.slug}`}
+                      href={shopCategoryHref(cat.slug)}
                       className="flex items-center gap-3 px-3 py-3 text-text hover:bg-bg-subtle rounded-md transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
@@ -148,7 +134,7 @@ export function Header() {
                 {chapters.map((ch) => (
                   <li key={ch.slug}>
                     <Link
-                      href={`/chapter/${ch.slug}`}
+                      href={chapterHref(ch.slug)}
                       className="flex items-center gap-3 px-3 py-3 text-text hover:bg-bg-subtle rounded-md transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
@@ -194,14 +180,12 @@ export function Header() {
         </CartProvider>
       </div>
 
-      {/* WhatsApp Float Button */}
-      <WhatsAppFloatButton />
-
-      {/* Mobile Search Toggle */}
+      {/* Mobile Search Toggle — offset above the WhatsApp float button
+          (which lives in the root layout) to avoid FAB collision. */}
       <Button
         variant="ghost"
         size="sm"
-        className="md:hidden fixed bottom-20 right-4 z-30"
+        className="md:hidden fixed bottom-40 right-4 z-30 bg-bg border border-border rounded-full shadow-md"
         onClick={() => setSearchOpen(!searchOpen)}
         aria-label="Search"
         aria-expanded={searchOpen}

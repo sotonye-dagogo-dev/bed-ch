@@ -2,11 +2,47 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: append-only; never delete
 
 > **Overview:** Append-only log of all AI-assisted development sessions. Each entry: Date, Agent/Command, Summary, Files Changed, Decisions Made, Next Steps.
+
+## 2026-10-14: MVP Tightening — Null-Get Crash, Routing, Footer, WhatsApp Float, Error Boundaries
+
+**Command:** `execute-feature.md`
+**Directive:** Resolve `Cannot read properties of null (reading 'get')` on shop/chapter routes; QA with installs; error-boundary refresh must reload; WhatsApp float fixed bottom-right; footer WhatsApp CTA above links + remove redundant bottom tiles; shop-vs-chapter links to correct targets. Config/metadata-driven, reusable modular, non-breaking, fallbacks + edge handling; close with `update-ai-system.md`.
+
+**Summary:** Fixed the route crash at every `.get` site (cookies/headers/searchParams/formData guards), extracted shop sort into client `ShopSortSelect`, fixed `FilterSidebar` hydration mismatch, added `/shop/[category]` redirect segment, corrected all shop-vs-chapter links, moved footer WhatsApp CTA above links (single trust-tiles block sustained; TrustBar mobile-only), relocated WhatsApp float to layout body-level fixed position, added segment error boundaries with real reload, removed duplicate Header/Footer/TrustBar from legal pages, centralized everything in `src/config/site.ts`. QA: typecheck ✅, lint ✅ (0 errors), tests 15/15 ✅, `next build` ✅ (24/24 pages; postbuild sitemap needs live DB — environmental).
+
+**Files Created/Updated:**
+- `src/config/site.ts` (new) — siteConfig + href/WhatsApp helpers; `tests/unit/lib/site-config.test.ts` (new, 6 tests)
+- `src/components/product/ShopSortSelect.tsx` (new); `src/app/shop/page.tsx` (client sort, safe pagination, guarded fetch)
+- `src/app/shop/[category]/page.tsx` (new redirect); `src/app/chapter/[slug]/page.tsx` + `src/app/product/[id]/page.tsx` (null-safe params/fetch)
+- `src/app/page.tsx` (chapter links → `/#chapters` anchor + `id`, graceful fetch, config chapters)
+- `src/components/layout/Header.tsx` (config nav, Chapters → `/#chapters`, canonical hrefs, float removed, search FAB offset)
+- `src/components/layout/Footer.tsx` (order: trust → WhatsApp CTA → links → bottom bar; all config-driven)
+- `src/components/layout/TrustBar.tsx` (config badges, mobile-only)
+- `src/components/whatsapp/WhatsAppFloatButton.tsx` (config URL, bottom-24/z-50 mobile, bottom-6 desktop)
+- `src/app/layout.tsx` (float at body level, metadataBase from config)
+- `src/components/error/RouteError.tsx` + `index.ts` (new); `src/app/error.tsx`, `src/app/shop/error.tsx`, `src/app/chapter/[slug]/error.tsx` (new); `src/app/global-error.tsx` (reload)
+- `src/lib/db/cart.ts`, `src/app/api/checkout/route.ts`, `src/lib/server-actions.ts`, `src/app/api/webhooks/paystack/route.ts`, `src/app/checkout/callback/CheckoutCallbackContent.tsx` (null guards)
+- `src/components/product/FilterSidebar.tsx` (mount-guarded viewport, safe URLs)
+- `src/lib/whatsapp.ts` (number via config); `src/app/{terms,privacy,delivery-returns}/page.tsx` (dup chrome removed, config URLs, no nested main)
+- ai-system: session-log, dev-history, task-queue (`last-synced`), project-decisions, lessons-learned, repair-system, repo-map, dependency-graph, system-architecture, DISCREPANCY_REPORT; in-progress cleared
+
+**Key Findings (Drift Detected):**
+1. RESOLVED — catalog queries are REAL Prisma now (prior HIGH drift entry stale since ≤2026-10-14)
+2. RESOLVED — `validations.ts` exists (prior MEDIUM drift entry stale)
+3. TrustBar/Footer tile duplication by co-render (fixed via mobile-only TrustBar)
+4. Legal pages rendered duplicate Header/Footer/TrustBar (fixed)
+
+**Next Steps:**
+1. Cross-browser testing, production content photos, 5 journal articles, live keys, Vercel deploy (still open in task-queue)
+2. Add `public/sitemap*.xml` gitignore policy decision
+3. Consider `/chapters` index page if anchor proves insufficient
+
+---
 
 ## 2026-09-01: Deep Sync — Sprints 1-3 Backend/Payments/Polish Complete
 

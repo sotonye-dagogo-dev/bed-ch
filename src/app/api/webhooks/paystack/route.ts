@@ -6,8 +6,13 @@ import { updateOrderPaymentStatus } from '@/lib/db/orders';
 
 export async function POST(request: NextRequest) {
   try {
-    const headersList = await headers();
-    const signature = headersList.get('x-paystack-signature');
+    let headersList: Awaited<ReturnType<typeof headers>> | null = null;
+    try {
+      headersList = await headers();
+    } catch {
+      headersList = null;
+    }
+    const signature = headersList?.get?.('x-paystack-signature');
 
     if (!signature) {
       return NextResponse.json(
