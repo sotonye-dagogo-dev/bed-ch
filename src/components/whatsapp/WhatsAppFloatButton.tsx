@@ -9,9 +9,8 @@ import { getWhatsAppContactUrl, siteConfig } from '@/config/site';
 /**
  * Floating WhatsApp "Chat to order" button.
  *
- * Position contract (per design-system, adjusted for collisions):
- * - Mobile: fixed bottom-24 right-4 (above the fixed TrustBar + clear of
- *   the header's mobile search FAB at bottom-40), z-50.
+ * Position contract (per design-system):
+ * - Mobile: fixed bottom-6 right-4, z-50.
  * - Desktop: fixed bottom-6 right-6, z-50.
  * Rendered once from the root layout (NOT inside <header>) so it keeps a
  * true viewport-fixed position on every page.
@@ -50,7 +49,7 @@ export function WhatsAppFloatButton() {
       {/* Pulse ring animation */}
       <div
         className={clsx(
-          'whatsapp-pulse fixed bottom-24 right-4 z-50 w-14 h-14 rounded-full bg-primary/20',
+          'whatsapp-pulse fixed bottom-6 right-4 z-50 w-14 h-14 rounded-full bg-primary/20',
           'md:bottom-6 md:right-6',
         )}
         style={{
@@ -65,7 +64,7 @@ export function WhatsAppFloatButton() {
         target="_blank"
         rel="noopener noreferrer"
         className={clsx(
-          'fixed bottom-24 right-4 z-50',
+          'fixed bottom-6 right-4 z-50',
           'w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg',
           'transition-all duration-fast hover:scale-105 active:scale-95',
           'md:bottom-6 md:right-6',

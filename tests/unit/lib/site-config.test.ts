@@ -30,6 +30,10 @@ describe('siteConfig', () => {
     expect(chapterHref('nursery')).toBe('/chapter/nursery');
   });
 
+  it('exposes a chapters index href for View-all-chapters links', () => {
+    expect(siteConfig.chaptersIndexHref).toBe('/chapters');
+  });
+
   it('validates known vs unknown categories', () => {
     expect(isKnownCategory('bedding')).toBe(true);
     expect(isKnownCategory('nope')).toBe(false);

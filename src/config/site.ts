@@ -87,6 +87,9 @@ export const siteConfig = {
   /** Homepage anchor for the chapter teaser section. */
   chapterTeaserHref: '/#chapters',
 
+  /** Canonical index where all chapters can be viewed. */
+  chaptersIndexHref: '/chapters',
+
   footer: {
     help: [
       { label: 'Delivery & Returns', href: '/delivery-returns' },

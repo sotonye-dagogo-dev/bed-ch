@@ -128,7 +128,7 @@ export default async function HomePage() {
               <p className="text-text-muted mt-1">Find your bedroom style</p>
             </div>
             <Link
-              href={siteConfig.chapterTeaserHref}
+              href={siteConfig.chaptersIndexHref}
               className="inline-flex items-center gap-1 font-medium text-text-muted hover:text-primary transition-colors"
             >
               View all chapters
