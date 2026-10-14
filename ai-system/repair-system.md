@@ -193,4 +193,32 @@
 
 ## Project-Specific Patterns (Bedroom Chapters)
 
-*Entries will be added as development progresses*
+### Null `.get()` on Shop/Chapter Routes (2026-10-14)
+
+**Symptom:**
+Routing to `/shop` or `/chapter/*` surfaces the error boundary: `Cannot read properties of null (reading 'get')`.
+
+**Root Cause:**
+Multiple compounding causes found 2026-10-14:
+1. Unguarded `.get()` on hosts that can be null during prerender/edge: `cookies().get`, `headers().get`, `useSearchParams().get`, `formData.get` (`src/lib/db/cart.ts`, `src/app/api/*/route.ts`, `src/lib/server-actions.ts`, `CheckoutCallbackContent.tsx`).
+2. `window` + inline `onChange` handler inside the Shop Server Component (`src/app/shop/page.tsx` sort `<select>`) — interactivity cannot execute during server render.
+3. Render-time `typeof window !== 'undefined' && window.innerWidth` check in `FilterSidebar` — SSR/client mismatch (hydration fault on `/shop`).
+4. Dead `/shop/<slug>` links (no such route) 404ing into `not-found`.
+
+**Fix Applied:**
+- Optional-chaining + try/catch guards at every `.get` site; server pages accept `Promise | plain` params and degrade (homepage → skeletons, shop/chapter → segment `error.tsx`).
+- Extracted `src/components/product/ShopSortSelect.tsx` (`'use client'`, `useRouter` + null-safe `useSearchParams`, Suspense fallback).
+- `FilterSidebar` defers viewport detection to post-mount state (`useEffect`).
+- New `src/app/shop/[category]/page.tsx` validates slug (config → DB) and redirects to canonical `/shop?category=<slug>`, else `notFound()`.
+- New segment boundaries `src/app/error.tsx`, `src/app/shop/error.tsx`, `src/app/chapter/[slug]/error.tsx` sharing `RouteError` (full `window.location.reload()` recovery); `global-error.tsx` Refresh now reloads.
+
+**Prevention:**
+- Grep `\.get\(` each QA pass — every hit needs a null guard.
+- Zero `window.` / inline event handlers in `*.tsx` Server Components (no `'use client'` = no interactivity).
+- No render-time viewport reads; use mounted state.
+
+**Files Affected:**
+`src/lib/db/cart.ts`, `src/app/api/checkout/route.ts`, `src/app/api/webhooks/paystack/route.ts`, `src/lib/server-actions.ts`, `src/app/checkout/callback/CheckoutCallbackContent.tsx`, `src/app/shop/page.tsx`, `src/app/chapter/[slug]/page.tsx`, `src/app/product/[id]/page.tsx`, `src/app/page.tsx`, `src/components/product/ShopSortSelect.tsx` (new), `src/components/product/FilterSidebar.tsx`, `src/app/shop/[category]/page.tsx` (new), `src/app/error.tsx` + `src/app/shop/error.tsx` + `src/app/chapter/[slug]/error.tsx` (new), `src/components/error/RouteError.tsx` (new), `src/app/global-error.tsx`, `src/config/site.ts` (new)
+
+**Date:** 2026-10-14
+**Status:** Active

@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: re-verify after each milestone or scope change
 >
 > **Overview:** Feature checklist inferred from codebase and client requirements. Tagged with complexity: [S] <1 day, [M] 1-3 days, [L] 3-5 days, [XL] >5 days.

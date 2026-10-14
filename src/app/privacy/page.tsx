@@ -1,8 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { TrustBar } from '@/components/layout/TrustBar';
+import { getWhatsAppContactUrl } from '@/config/site';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -12,8 +10,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <>
-      <Header />
-      <main className="pt-20 pb-16 px-4">
+      <div className="pt-8 pb-16 px-4">
         <div className="container-custom max-w-3xl">
           <h1 className="text-3xl font-bold text-text mb-8">Privacy Policy</h1>
           <p className="text-text-muted mb-8">Last updated: {new Date().toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
@@ -127,20 +124,13 @@ export default function PrivacyPage() {
                 If you have questions about this Privacy Policy or our data practices, contact us:
               </p>
               <ul className="list-disc list-inside text-text-muted space-y-2 mt-2">
-                <li>WhatsApp: <Link href={generateWhatsAppContactUrl()} className="text-primary hover:underline">Chat with us</Link></li>
+                <li>WhatsApp: <Link href={getWhatsAppContactUrl('Hello Bedroom Chapters! I have a question about your Privacy Policy.')} className="text-primary hover:underline">Chat with us</Link></li>
                 <li>Email: privacy@bedroomchapters.ng</li>
               </ul>
             </section>
           </div>
         </div>
-      </main>
-      <Footer />
-      <TrustBar />
+      </div>
     </>
   );
-}
-
-function generateWhatsAppContactUrl(): string {
-  const message = encodeURIComponent('Hello Bedroom Chapters! I have a question about your Privacy Policy.');
-  return `https://wa.me/2348012345678?text=${message}`;
 }

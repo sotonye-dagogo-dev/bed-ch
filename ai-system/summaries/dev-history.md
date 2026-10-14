@@ -10,28 +10,25 @@
 
 ---
 
-## 2026-10-14: DB Connection Routing Fixed + First Migration Applied
+## 2026-10-14: MVP Tightening — Crash Fix, Config-Driven Links/Layout, Error Boundaries
 
-**Milestone:** `prisma migrate deploy` now runs against `DIRECT_URL`; app runtime pinned to `DATABASE_URL`
+**Milestone:** Null-`get` route crash resolved; `src/config/site.ts` single source; footer/WhatsApp-float/error-boundary fixes; QA gate green
 
-**Summary:** Schema declared only `url = env("DATABASE_URL")`, so migrations were being issued to the Supabase transaction-mode pooler (`:6543`) despite `.env` already carrying an unused `DIRECT_URL` (`:5432`, session-capable). Added `directUrl = env("DIRECT_URL")` to the datasource and documented the split. Also fixed `scripts/db-deploy.mjs`, which never loaded `.env` (so it silently skipped DB deployment when run locally) and validated only `DATABASE_URL`. Applied `000_init` to the (empty) Supabase database through `:5432`; `prisma migrate status` now reports up to date. Routing proven both ways by poisoning one var while leaving the other valid.
+**Summary:** Executed the MVP-tightening directive end-to-end. Root-caused `Cannot read properties of null (reading 'get')` on shop/chapter routes to unguarded `.get()` hosts + `window`/handlers in the Shop Server Component + a `FilterSidebar` hydration mismatch + dead `/shop/<slug>` links; fixed all with null-safe guards, client-leaf extraction (`ShopSortSelect`), mount-guarded viewport detection, and a `/shop/[category]` redirect segment. Corrected every shop-vs-chapter link (homepage/Header → `/#chapters` anchor; category links → canonical `/shop?category=`). Reordered Footer (trust → WhatsApp CTA → links → bottom bar, single tiles block, all config-driven), made TrustBar mobile-only to end desktop duplication, relocated the WhatsApp float to layout body-level (`bottom-24/z-50` mobile, `bottom-6` desktop) and offset the mobile search FAB. Added `error.tsx` segment boundaries sharing `RouteError` plus a real-reload `global-error`. Removed duplicate Header/Footer/TrustBar from legal pages and unified WhatsApp numbers via config. Also resolved two stale HIGH/MEDIUM drifts: catalog queries and `validations.ts` are real/present in code.
 
 **Key Accomplishments:**
-- `prisma/schema.prisma` — `directUrl = env("DIRECT_URL")` (migrate/db push/Studio) alongside `url = env("DATABASE_URL")` (Prisma Client)
-- `.env.example` — `DIRECT_URL` added with per-surface usage comments
-- `scripts/db-deploy.mjs` — repo-root `.env` loader (process env wins), `DIRECT_URL → DATABASE_URL` fallback for pooler-less deployments
-- `README.md` — env table, Vercel steps, GH Actions sample now cover `DIRECT_URL`
-- Docs: `system-architecture.md` config table, `project-decisions.md`, `repair-system.md` error entry, task-queue row
+- `src/config/site.ts` — nav/footer/trust/whatsapp/filters + helpers; consumed by 10+ modules
+- Crash guards in 6 `.get` sites + 4 server pages with graceful degradation
+- 4 new files: `ShopSortSelect`, `shop/[category]`, `RouteError`, 3× `error.tsx` (+ error barrel)
+- `tests/unit/lib/site-config.test.ts` — 6 new tests
 
 **Metrics:**
-- Files modified: 6 code/config (`prisma/schema.prisma`, `.env.example`, `scripts/db-deploy.mjs`, `README.md`) + 5 ai-system docs
-- Migrations applied: 1 (`000_init`); tables now in `public`: 10
-- QA gate: typecheck 0 · lint 0 (pre-existing warnings only) · tests 9/9 · `next build` + sitemap 0
-- Verification: 4 routing checks (2 positive, 2 negative), 2 deploy-script path checks
+- Files added/modified: ~25 app/lib/config + 9 ai-system docs
+- QA: `tsc` ✅ · `next lint` 0 errors ✅ · vitest 15/15 ✅ · `next build` 24/24 pages ✅ (postbuild sitemap requires live `DATABASE_URL` — environmental, not code)
 
-**Known Gaps (post this change):**
-- `DIRECT_URL` still needs adding to Vercel env (and repo secret if the GH Actions migration workflow is adopted) — until then deploy falls back to the pooled URL by design
-- Supabase DB is empty (no seed data) — `npm run db:seed` pending on this environment
+**Known Gaps (post this session):**
+- Cross-browser testing, production photos, journal articles, live keys, Vercel deploy (unchanged, still open)
+- Sitemap postbuild unverified without DB; `/chapters` index deferred in favour of anchor
 
 ---
 

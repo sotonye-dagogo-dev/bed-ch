@@ -153,26 +153,25 @@
 - ⚠️ Manual curation needed (mitigate: admin UI later)
 - ⚠️ 9 pages to maintain content for
 
-**Supersedes:** None
+**Supersedes:** None (initial decision)
 
 ---
 
-## 2026-10-14: Two-URL Database Routing (DATABASE_URL vs DIRECT_URL)
+## 2026-10-14: Central Site Config + Canonical Query URLs
 
-**Decision:** `DATABASE_URL` is the runtime-only connection string (Prisma Client, transaction-mode pooler `:6543`); `DIRECT_URL` is the migration-only connection string (Prisma Migrate / `db push` / Studio, session-capable `:5432`). Both declared in `prisma/schema.prisma` (`url` + `directUrl`). If `DIRECT_URL` is absent, `scripts/db-deploy.mjs` passes `DIRECT_URL=DATABASE_URL` to the migration child process instead of failing.
+**Decision:** Single `src/config/site.ts` drives all nav, footer, trust, WhatsApp and filter metadata; canonical shop-category URLs are query-based (`/shop?category=<slug>`); legacy `/shop/<slug>` paths redirect (new `shop/[category]` segment) instead of duplicating the catalogue; chapter entry points use the `/#chapters` homepage anchor.
 
-**Context:** `.env` already carried both URLs, but the schema referenced only `DATABASE_URL`, so migrations were issued to the transaction-mode pooler — a documented failure mode for `prisma migrate` (session-scoped DDL, advisory locks, prepared statements). Separately, `db-deploy.mjs` never loaded `.env`, so it always skipped deployment when run locally.
+**Context:** MVP-tightening found 404s from `/shop/<slug>` links, shop-vs-chapter link mix-ups (homepage "Shop by Chapter" → `/shop`), three disagreeing WhatsApp numbers, and Footer/Header/Home hardcoding the same 9 chapters/8 categories.
 
 **Alternatives Considered:**
-- `--url` flag per command: easy to get wrong, invisible in scripts/CI, easy to leak the pooled URL into migrations
-- Drop `DIRECT_URL` and keep one URL: migrations break against Supabase transaction pooling
-- Adding a dotenv dependency to `db-deploy.mjs`: extra dependency for a ~15-line parse; Node's `process.loadEnvFile` isn't available on all supported Node versions
+- Duplicate catalogue rendering under `/shop/[category]`: two implementations to maintain, SEO duplicate-content risk — rejected
+- Full chapters index page (`/chapters`): new route + content burden for MVP — deferred, anchor covers entry
+- Leave hardcoded literals: drift recurs — rejected
 
 **Consequences:**
-- ✅ Migrations verifiably run on `:5432`; client verifiably on `:6543` (proven by poisoning each var independently)
-- ✅ `db-deploy.mjs` behaves identically locally and on Vercel; process env still overrides `.env`
-- ✅ DATABASE_URL-only deployments keep working (documented fallback, logged when used)
-- ⚠️ Fallback means a *pooled-only* misconfiguration (DIRECT_URL forgotten while pooling enabled) warns rather than fails unless `DB_DEPLOY_STRICT=true`
-- ⚠️ `DIRECT_URL` must be added to Vercel env before deploy, or deploys take the fallback path
+- ✅ One edit point for links/badges/numbers; tests pin counts
+- ✅ No link 404s (redirect validates against config, then DB, else `notFound()`)
+- ✅ TrustBar made mobile-only (Footer tiles cover desktop) — removes bottom duplication; logged assumption, reversible
+- ⚠️ Legal pages lost their standalone chrome (now rely on root layout) — verified layout provides it on every route
 
-**Supersedes:** None (implements the "connection pooling needed for serverless (PgBouncer/Supabase)" consequence from the 2026-08-29 Database Schema Approach entry)
+**Supersedes:** None

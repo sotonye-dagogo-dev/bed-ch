@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: re-verify if module relationships change
 >
 > **Overview:** Module relationships as text diagram. Auto-regenerable via script.
@@ -23,7 +23,14 @@
 │                        APPLICATION LAYER                         │
 │  src/lib/cart-context.tsx  src/lib/server-actions.ts             │
 │  src/lib/db/*  src/lib/paystack.ts  src/lib/whatsapp.ts         │
-│  src/lib/utils.ts  src/app/api/*                                 │
+│  src/lib/utils.ts  src/lib/validations.ts  src/app/api/*         │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │ uses (both layers also read config)
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     CONFIG LAYER (NEW 2026-10-14)                │
+│  src/config/site.ts — nav, footer, trust, whatsapp, filters,    │
+│  href helpers (shopCategoryHref, chapterHref, WhatsApp URLs)    │
 └─────────────────────────────┬───────────────────────────────────┘
                               │ uses
                               ▼
@@ -46,10 +53,10 @@
 ### `(site)` — Marketing Pages
 ```
 src/app/layout.tsx (root)
-    ├─ src/components/layout/Header.tsx (useCart)
-    ├─ src/components/layout/Footer.tsx
-    ├─ src/components/layout/TrustBar.tsx
-    ├─ src/components/whatsapp/WhatsAppFloatButton.tsx
+    ├─ src/components/layout/Header.tsx (useCart, siteConfig nav)
+    ├─ src/components/layout/Footer.tsx (siteConfig trust/links/WhatsApp)
+    ├─ src/components/layout/TrustBar.tsx (siteConfig trustBadges, mobile-only)
+    ├─ src/components/whatsapp/WhatsAppFloatButton.tsx (viewport-fixed, siteConfig)
     ├─ src/components/analytics/AnalyticsProviders.tsx
     └─ src/lib/cart-context.tsx (CartProvider wrapping)
 

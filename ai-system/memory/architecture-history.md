@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: append-only; never delete, only supersede with new entry linking back
 
 > **Overview:** Architectural decision log with timestamps. Each entry: Date, Decision, Context, Impact, Related Files.
@@ -54,3 +54,19 @@
 - `prisma/schema.prisma` (OrderItem relations)
 - `package.json` (postbuild sitemap)
 - `ai-system/planning/task-queue.md` (phases 3-5 marked complete)
+
+---
+
+## 2026-10-14: Config Layer + Segment Error Boundaries Added
+
+**Decision:** Added `src/config/site.ts` as a new CONFIG layer (presentation + application layers read it; it reads env); added `src/app/shop/[category]` redirect segment and `error.tsx` boundaries (root/shop/chapter) sharing `src/components/error/RouteError.tsx`; extracted `ShopSortSelect` client leaf; made TrustBar mobile-only; relocated WhatsApp float to layout body level.
+
+**Context:** MVP-tightening crash/routing/layout fixes — no structural rebuild, additive segments + one config module.
+
+**Impact:** New dependencies: Header/Footer/TrustBar/WhatsAppFloat/homepage/shop/legal → `config/site.ts`; `lib/whatsapp.ts` → `config/site.ts`; shop page → `ShopSortSelect`; error segments → `RouteError`. Canonical category URLs now query-based with redirect fallback.
+
+**Related Files:**
+- `src/config/site.ts` (new)
+- `ai-system/system-architecture.md` (config layer in diagram + module tables)
+- `ai-system/index/repo-map.md` + `index/dependency-graph.md` (config layer, new segments)
+- `ai-system/memory/project-decisions.md` (2026-10-14 config decision)

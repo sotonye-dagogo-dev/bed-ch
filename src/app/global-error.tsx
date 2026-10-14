@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export default function GlobalError({
@@ -10,6 +10,20 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const handleReload = () => {
+    try {
+      // Full page reload guarantees recovery even when the error persists
+      // across segment resets (reset() alone often re-throws the same error).
+      window.location.reload();
+    } catch {
+      try {
+        reset();
+      } catch {
+        /* no-op */
+      }
+    }
+  };
+
   return (
     <html lang="en-NG">
       <head>
@@ -26,9 +40,18 @@ export default function GlobalError({
           <p className="text-text-muted mb-6">
             Something went wrong. Please try refreshing the page.
           </p>
-          <Button variant="primary" onClick={reset}>
-            Refresh Page
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="primary" onClick={handleReload} className="w-full sm:w-auto">
+              <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
+              Refresh Page
+            </Button>
+            <a href="/" className="w-full sm:w-auto inline-flex">
+              <Button variant="secondary" className="w-full sm:w-auto">
+                <Home className="h-4 w-4 mr-2" aria-hidden="true" />
+                Go Home
+              </Button>
+            </a>
+          </div>
         </div>
       </body>
     </html>

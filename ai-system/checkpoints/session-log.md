@@ -8,39 +8,39 @@
 
 > **Overview:** Append-only log of all AI-assisted development sessions. Each entry: Date, Agent/Command, Summary, Files Changed, Decisions Made, Next Steps.
 
-## 2026-10-14: DB Connection Routing — Migrations via DIRECT_URL, Runtime via DATABASE_URL (+ migrations applied)
+## 2026-10-14: MVP Tightening — Null-Get Crash, Routing, Footer, WhatsApp Float, Error Boundaries
 
 **Command:** `execute-feature.md`
-**Directive:** Ensure migrations use the direct URL and programs use the pooled URL (and then run the migrations)
+**Directive:** Resolve `Cannot read properties of null (reading 'get')` on shop/chapter routes; QA with installs; error-boundary refresh must reload; WhatsApp float fixed bottom-right; footer WhatsApp CTA above links + remove redundant bottom tiles; shop-vs-chapter links to correct targets. Config/metadata-driven, reusable modular, non-breaking, fallbacks + edge handling; close with `update-ai-system.md`.
 
-**Summary:** `prisma/schema.prisma` declared only `url = env("DATABASE_URL")`, so every `prisma migrate *` / `db push` command was silently running against the Supabase **transaction-mode** pooler (`:6543`, `pgbouncer=true`) instead of the session-capable endpoint — while `.env` already defined an unused `DIRECT_URL` (`:5432`). Added `directUrl = env("DIRECT_URL")` to the datasource, documented both vars in `.env.example` / README / `system-architecture.md`, and hardened `scripts/db-deploy.mjs` (it never loaded `.env`, so locally it always skipped deployment, and it validated only `DATABASE_URL`).
+**Summary:** Fixed the route crash at every `.get` site (cookies/headers/searchParams/formData guards), extracted shop sort into client `ShopSortSelect`, fixed `FilterSidebar` hydration mismatch, added `/shop/[category]` redirect segment, corrected all shop-vs-chapter links, moved footer WhatsApp CTA above links (single trust-tiles block sustained; TrustBar mobile-only), relocated WhatsApp float to layout body-level fixed position, added segment error boundaries with real reload, removed duplicate Header/Footer/TrustBar from legal pages, centralized everything in `src/config/site.ts`. QA: typecheck ✅, lint ✅ (0 errors), tests 15/15 ✅, `next build` ✅ (24/24 pages; postbuild sitemap needs live DB — environmental).
 
-**Verification (both directions proven, not assumed):**
-- `prisma migrate status` reports `...supabase.com:5432` → migrate resolves `DIRECT_URL`
-- With `DIRECT_URL` poisoned to `127.0.0.1:9` (real `DATABASE_URL` untouched) → migrate fails P1001 ⇒ migrate uses **only** `DIRECT_URL`
-- With `DATABASE_URL` poisoned (real `DIRECT_URL` untouched) → runtime `PrismaClient` query fails ⇒ client uses **only** `DATABASE_URL`
-- `prisma migrate deploy` applied `000_init` via `:5432`; `migrate status` → "Database schema is up to date" (DB was empty: confirmed with `migrate diff` before applying)
-- `node scripts/db-deploy.mjs --migrate-only` → applied/no-op via `:5432`, exit 0; fallback branch exercised in isolation (logs `DIRECT_URL not set — using DATABASE_URL`, non-strict warns + exit 0)
-- Gate: `typecheck` 0 · `lint` 0 (only pre-existing warnings, none in touched files) · `test` 9/9 · `next build` + sitemap postbuild 0 (sitemap generation exercises runtime `DATABASE_URL`)
+**Files Created/Updated:**
+- `src/config/site.ts` (new) — siteConfig + href/WhatsApp helpers; `tests/unit/lib/site-config.test.ts` (new, 6 tests)
+- `src/components/product/ShopSortSelect.tsx` (new); `src/app/shop/page.tsx` (client sort, safe pagination, guarded fetch)
+- `src/app/shop/[category]/page.tsx` (new redirect); `src/app/chapter/[slug]/page.tsx` + `src/app/product/[id]/page.tsx` (null-safe params/fetch)
+- `src/app/page.tsx` (chapter links → `/#chapters` anchor + `id`, graceful fetch, config chapters)
+- `src/components/layout/Header.tsx` (config nav, Chapters → `/#chapters`, canonical hrefs, float removed, search FAB offset)
+- `src/components/layout/Footer.tsx` (order: trust → WhatsApp CTA → links → bottom bar; all config-driven)
+- `src/components/layout/TrustBar.tsx` (config badges, mobile-only)
+- `src/components/whatsapp/WhatsAppFloatButton.tsx` (config URL, bottom-24/z-50 mobile, bottom-6 desktop)
+- `src/app/layout.tsx` (float at body level, metadataBase from config)
+- `src/components/error/RouteError.tsx` + `index.ts` (new); `src/app/error.tsx`, `src/app/shop/error.tsx`, `src/app/chapter/[slug]/error.tsx` (new); `src/app/global-error.tsx` (reload)
+- `src/lib/db/cart.ts`, `src/app/api/checkout/route.ts`, `src/lib/server-actions.ts`, `src/app/api/webhooks/paystack/route.ts`, `src/app/checkout/callback/CheckoutCallbackContent.tsx` (null guards)
+- `src/components/product/FilterSidebar.tsx` (mount-guarded viewport, safe URLs)
+- `src/lib/whatsapp.ts` (number via config); `src/app/{terms,privacy,delivery-returns}/page.tsx` (dup chrome removed, config URLs, no nested main)
+- ai-system: session-log, dev-history, task-queue (`last-synced`), project-decisions, lessons-learned, repair-system, repo-map, dependency-graph, system-architecture, DISCREPANCY_REPORT; in-progress cleared
 
-**Files Changed:**
-- `prisma/schema.prisma` — `directUrl = env("DIRECT_URL")` + comments on which surface uses which URL
-- `.env.example` — added `DIRECT_URL` + usage comments for both vars
-- `scripts/db-deploy.mjs` — repo-root `.env` loader (process env still wins), `childEnv` with `DIRECT_URL → DATABASE_URL` fallback, doc comment updated
-- `README.md` — env table rows for both vars, Vercel step 3, GH Actions sample secret
-- `ai-system/system-architecture.md` — Configuration Points table: added Direct Database URL row, freshness → 2026-10-14
-- `ai-system/memory/project-decisions.md`, `ai-system/repair-system.md`, `ai-system/planning/task-queue.md`, `ai-system/summaries/dev-history.md` — logged below
-
-**Decisions Made:**
-1. `DIRECT_URL` is authoritative for migrations whenever present; when it is **absent** (unpooled local Postgres, DATABASE_URL-only deployments), `db-deploy.mjs` passes `DIRECT_URL=DATABASE_URL` to the child process rather than failing — logged in `memory/project-decisions.md`.
-2. Runtime `PrismaClient` (`src/lib/prisma.ts`, `prisma/seed.ts`, `scripts/generate-sitemap.cjs`) stays untouched: plain constructors → always `DATABASE_URL`. No `datasources` overrides anywhere.
-3. No architecture restructure → task tagged `[M]`, so `update-ai-system.md` (deep sync) not required; `sync-context.md` run mid-work and at close.
-
-**Sync-context (final pass, 2026-10-14):** Synced — `system-architecture.md` Configuration Points (added Direct Database URL row), `repo-map.md` (added missing `scripts/db-deploy.mjs` entry + `.env.example` description), `task-queue.md` (new completed row, `last-synced` bumped) with `in-progress.md` updated in the same pass per checkpoint-compliance (no violation), `repair-system.md` (2 new error entries). Flagged, not changed: `dependency-graph.md` still claims catalog queries are mock while task-queue marks them real — pre-existing HIGH drift, out of this directive's scope. Left intentionally out of sync: none.
+**Key Findings (Drift Detected):**
+1. RESOLVED — catalog queries are REAL Prisma now (prior HIGH drift entry stale since ≤2026-10-14)
+2. RESOLVED — `validations.ts` exists (prior MEDIUM drift entry stale)
+3. TrustBar/Footer tile duplication by co-render (fixed via mobile-only TrustBar)
+4. Legal pages rendered duplicate Header/Footer/TrustBar (fixed)
 
 **Next Steps:**
-1. Set `DIRECT_URL` as a Vercel env var (and repo secret if the GH Actions migration workflow is added) — deploy will otherwise silently fall back to the pooled URL
-2. Existing queue items unchanged: catalog→Prisma migration, CI/CD workflow, launch checklist
+1. Cross-browser testing, production content photos, 5 journal articles, live keys, Vercel deploy (still open in task-queue)
+2. Add `public/sitemap*.xml` gitignore policy decision
+3. Consider `/chapters` index page if anchor proves insufficient
 
 ---
 

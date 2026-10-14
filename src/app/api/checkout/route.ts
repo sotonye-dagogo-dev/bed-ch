@@ -7,7 +7,12 @@ import { checkoutSchema, validateCheckoutBusinessRules } from '@/lib/validations
 
 export async function POST(request: NextRequest) {
   try {
-    const sessionId = cookies().get('sessionId')?.value;
+    let sessionId: string | undefined;
+    try {
+      sessionId = cookies()?.get?.('sessionId')?.value;
+    } catch {
+      sessionId = undefined;
+    }
     if (!sessionId) {
       return NextResponse.json(
         { success: false, error: 'No active session' },
@@ -33,19 +38,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const formData = await request.formData();
+    let formData: FormData | null = null;
+    try {
+      formData = await request.formData();
+    } catch {
+      formData = null;
+    }
+
+    const str = (key: string): string => {
+      try {
+        const v = formData?.get?.(key);
+        return typeof v === 'string' ? v : '';
+      } catch {
+        return '';
+      }
+    };
 
     const raw = {
-      firstName: formData.get('firstName') as string,
-      lastName: formData.get('lastName') as string,
-      phone: formData.get('phone') as string,
-      email: formData.get('email') as string || undefined,
-      address: formData.get('address') as string,
-      city: formData.get('city') as string,
-      state: formData.get('state') as string,
-      deliveryOption: formData.get('deliveryOption') as string,
-      paymentMethod: formData.get('paymentMethod') as string,
-      notes: formData.get('notes') as string || undefined,
+      firstName: str('firstName') as string,
+      lastName: str('lastName') as string,
+      phone: str('phone') as string,
+      email: str('email') || undefined,
+      address: str('address') as string,
+      city: str('city') as string,
+      state: str('state') as string,
+      deliveryOption: str('deliveryOption') as string,
+      paymentMethod: str('paymentMethod') as string,
+      notes: str('notes') || undefined,
     };
 
     const parsed = checkoutSchema.safeParse(raw);

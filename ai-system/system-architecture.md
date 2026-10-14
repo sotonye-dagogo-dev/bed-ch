@@ -80,11 +80,11 @@
 
 | Route Group | Pages | Status | Purpose |
 |-------------|-------|--------|---------|
-| Root Layout | `layout.tsx`, `globals.css`, `global-error.tsx` | ✅ | Providers (CartProvider), fonts, header, footer, trust bar, analytics, error boundary |
-| Homepage | `page.tsx` | ✅ | Hero, search, two-path CTAs, bestsellers, chapter teaser |
-| Shop | `shop/page.tsx` | ✅ | Filter sidebar, product grid, pagination, URL-based filters |
-| Product Detail | `product/[id]/page.tsx` | ✅ | Gallery, variants, add-to-cart (real), complete-the-look, delivery estimate |
-| Chapter | `chapter/[slug]/page.tsx` | ✅ | Hero, curated products, bundle offer |
+| Root Layout | `layout.tsx`, `globals.css`, `global-error.tsx`, `error.tsx` | ✅ | Providers (CartProvider), fonts, header, footer, trust bar, WhatsApp float (body-level), analytics, error boundaries |
+| Homepage | `page.tsx` | ✅ | Hero, search, two-path CTAs (product → /shop, chapter → /#chapters), bestsellers, chapter teaser (#chapters anchor) |
+| Shop | `shop/page.tsx` + `shop/[category]/page.tsx` | ✅ | Filter sidebar, sort (client `ShopSortSelect`), product grid, pagination; legacy `/shop/<slug>` redirects to canonical `?category=` |
+| Product Detail | `product/[id]/page.tsx` | ✅ | Gallery, variants, add-to-cart (real), complete-the-look, delivery estimate; breadcrumbs use canonical query hrefs |
+| Chapter | `chapter/[slug]/page.tsx` + `chapter/[slug]/error.tsx` | ✅ | Hero, curated products, bundle offer; null-safe params + DB guards |
 | Cart | `cart/page.tsx` | ✅ | Full-page cart (real: useCart + Prisma via /api/cart) |
 | Checkout | `checkout/page.tsx` | ✅ | 4-step form (real: /api/checkout, POD validation, order creation) |
 | Checkout Callback | `checkout/callback/page.tsx` | ✅ | Paystack redirect handler + verification |
@@ -98,12 +98,13 @@
 | Component | File | Status | Notes |
 |-----------|------|--------|-------|
 | UI Primitives | `src/components/ui/` | ✅ | Button, Input, Select, Badge, Card, Sheet, Skeleton |
-| Layout | `src/components/layout/` | ✅ | Header (useCart), Footer, TrustBar |
-| Product | `src/components/product/` | ✅ | ProductGrid, FilterSidebar |
+| Layout | `src/components/layout/` | ✅ | Header (useCart, config nav), Footer (trust → WhatsApp CTA → links), TrustBar (mobile-only) |
+| Product | `src/components/product/` | ✅ | ProductGrid, FilterSidebar (mount-guarded), ShopSortSelect (client sort) |
 | Cart | `src/components/cart/` | ✅ | CartSlideOut (real: useCart) |
 | Empty States | `src/components/empty/` | ✅ | EmptyState, EmptyCartState, EmptyProductState |
-| Error | `src/components/error/` | ✅ | ErrorBoundary (class) + global-error.tsx |
-| WhatsApp | `src/components/whatsapp/` | ✅ | WhatsAppFloatButton (dynamic contact URL) |
+| Error | `src/components/error/` | ✅ | ErrorBoundary (class) + RouteError (shared) + error.tsx segments (root/shop/chapter) + global-error (reload) |
+| WhatsApp | `src/components/whatsapp/` | ✅ | WhatsAppFloatButton (body-level fixed, config URL) |
+| Config | `src/config/site.ts` | ✅ | siteConfig (nav/footer/trust/whatsapp/filters) + href helpers |
 | Analytics | `src/components/analytics/` | ✅ | GA4, MetaPixel, Hotjar providers (no events yet) |
 
 ---
@@ -113,9 +114,9 @@
 | Module | File | Status | Purpose |
 |--------|------|--------|---------|
 | Prisma Client | `prisma.ts` | ✅ | Singleton client (used by cart/orders/paystack) |
-| Product Queries | `db/products.ts` | 🔄 | STILL MOCK — not yet migrated to Prisma (drift vs task-queue) |
-| Chapter Queries | `db/chapters.ts` | 🔄 | STILL MOCK — not yet migrated |
-| Category Queries | `db/categories.ts` | 🔄 | STILL MOCK — not yet migrated |
+| Product Queries | `db/products.ts` | ✅ | REAL Prisma (drift resolved): list/get/search/by-category/by-chapter/related |
+| Chapter Queries | `db/chapters.ts` | ✅ | REAL Prisma (drift resolved) |
+| Category Queries | `db/categories.ts` | ✅ | REAL Prisma (drift resolved) |
 | Cart Queries | `db/cart.ts` | ✅ | Real Prisma: getCart, addToCart, update, remove, clear, totals (sessionId cookie) |
 | Order Queries | `db/orders.ts` | ✅ | Real Prisma: createOrder (Tx + stock), getById, updatePaymentStatus |
 | Paystack | `paystack.ts` | ✅ | Real: initializePayment, verifyPayment, verifyWebhookSignature, handleWebhook |
@@ -316,9 +317,9 @@ enum OrderStatus {
 
 ## Data Flows
 
-### 1. Product Browse Flow (Current: Still Mock for Catalog)
+### 1. Product Browse Flow (Real Prisma catalog)
 ```
-User → Homepage/Shop/Chapter Page → Server Component fetches products (MOCK — drift) → Renders ProductGrid → User clicks product → Product Detail Page → Selects variant → useCart.addToCart() → POST /api/cart → Prisma addToCart → revalidate → CartSlideOut opens (REAL)
+User → Homepage/Shop/Chapter Page → Server Component fetches products (REAL Prisma, null-safe) → Renders ProductGrid → User clicks product → Product Detail Page → Selects variant → useCart.addToCart() → POST /api/cart → Prisma addToCart → revalidate → CartSlideOut opens (REAL)
 ```
 
 **Implemented Cart Flow (Real):**
