@@ -2,11 +2,47 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: append-only; never delete
 
 > **Overview:** Append-only log of all AI-assisted development sessions. Each entry: Date, Agent/Command, Summary, Files Changed, Decisions Made, Next Steps.
+
+## 2026-10-14: DB Connection Routing — Migrations via DIRECT_URL, Runtime via DATABASE_URL (+ migrations applied)
+
+**Command:** `execute-feature.md`
+**Directive:** Ensure migrations use the direct URL and programs use the pooled URL (and then run the migrations)
+
+**Summary:** `prisma/schema.prisma` declared only `url = env("DATABASE_URL")`, so every `prisma migrate *` / `db push` command was silently running against the Supabase **transaction-mode** pooler (`:6543`, `pgbouncer=true`) instead of the session-capable endpoint — while `.env` already defined an unused `DIRECT_URL` (`:5432`). Added `directUrl = env("DIRECT_URL")` to the datasource, documented both vars in `.env.example` / README / `system-architecture.md`, and hardened `scripts/db-deploy.mjs` (it never loaded `.env`, so locally it always skipped deployment, and it validated only `DATABASE_URL`).
+
+**Verification (both directions proven, not assumed):**
+- `prisma migrate status` reports `...supabase.com:5432` → migrate resolves `DIRECT_URL`
+- With `DIRECT_URL` poisoned to `127.0.0.1:9` (real `DATABASE_URL` untouched) → migrate fails P1001 ⇒ migrate uses **only** `DIRECT_URL`
+- With `DATABASE_URL` poisoned (real `DIRECT_URL` untouched) → runtime `PrismaClient` query fails ⇒ client uses **only** `DATABASE_URL`
+- `prisma migrate deploy` applied `000_init` via `:5432`; `migrate status` → "Database schema is up to date" (DB was empty: confirmed with `migrate diff` before applying)
+- `node scripts/db-deploy.mjs --migrate-only` → applied/no-op via `:5432`, exit 0; fallback branch exercised in isolation (logs `DIRECT_URL not set — using DATABASE_URL`, non-strict warns + exit 0)
+- Gate: `typecheck` 0 · `lint` 0 (only pre-existing warnings, none in touched files) · `test` 9/9 · `next build` + sitemap postbuild 0 (sitemap generation exercises runtime `DATABASE_URL`)
+
+**Files Changed:**
+- `prisma/schema.prisma` — `directUrl = env("DIRECT_URL")` + comments on which surface uses which URL
+- `.env.example` — added `DIRECT_URL` + usage comments for both vars
+- `scripts/db-deploy.mjs` — repo-root `.env` loader (process env still wins), `childEnv` with `DIRECT_URL → DATABASE_URL` fallback, doc comment updated
+- `README.md` — env table rows for both vars, Vercel step 3, GH Actions sample secret
+- `ai-system/system-architecture.md` — Configuration Points table: added Direct Database URL row, freshness → 2026-10-14
+- `ai-system/memory/project-decisions.md`, `ai-system/repair-system.md`, `ai-system/planning/task-queue.md`, `ai-system/summaries/dev-history.md` — logged below
+
+**Decisions Made:**
+1. `DIRECT_URL` is authoritative for migrations whenever present; when it is **absent** (unpooled local Postgres, DATABASE_URL-only deployments), `db-deploy.mjs` passes `DIRECT_URL=DATABASE_URL` to the child process rather than failing — logged in `memory/project-decisions.md`.
+2. Runtime `PrismaClient` (`src/lib/prisma.ts`, `prisma/seed.ts`, `scripts/generate-sitemap.cjs`) stays untouched: plain constructors → always `DATABASE_URL`. No `datasources` overrides anywhere.
+3. No architecture restructure → task tagged `[M]`, so `update-ai-system.md` (deep sync) not required; `sync-context.md` run mid-work and at close.
+
+**Sync-context (final pass, 2026-10-14):** Synced — `system-architecture.md` Configuration Points (added Direct Database URL row), `repo-map.md` (added missing `scripts/db-deploy.mjs` entry + `.env.example` description), `task-queue.md` (new completed row, `last-synced` bumped) with `in-progress.md` updated in the same pass per checkpoint-compliance (no violation), `repair-system.md` (2 new error entries). Flagged, not changed: `dependency-graph.md` still claims catalog queries are mock while task-queue marks them real — pre-existing HIGH drift, out of this directive's scope. Left intentionally out of sync: none.
+
+**Next Steps:**
+1. Set `DIRECT_URL` as a Vercel env var (and repo secret if the GH Actions migration workflow is added) — deploy will otherwise silently fall back to the pooled URL
+2. Existing queue items unchanged: catalog→Prisma migration, CI/CD workflow, launch checklist
+
+---
 
 ## 2026-09-01: Deep Sync — Sprints 1-3 Backend/Payments/Polish Complete
 

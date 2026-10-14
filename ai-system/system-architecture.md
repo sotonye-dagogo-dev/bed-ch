@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: re-verify if architecture changes or after major refactor
 >
 > **Overview:** High-level structural documentation — module breakdown, data flows, configuration points, and architectural decisions. Updated to reflect actual implementation state as of 2026-09-01 — Phases 3-5 cart/payments/polish delivered.
@@ -347,7 +347,8 @@ Paystack event → POST /api/webhooks/paystack (verify signature with createHmac
 
 | Config | Location | Status | Description |
 |--------|----------|--------|-------------|
-| Database URL | `env:DATABASE_URL` | ✅ In .env.example | PostgreSQL connection string |
+| Database URL | `env:DATABASE_URL` | ✅ In .env.example | PostgreSQL connection string — runtime (Prisma Client) via transaction-mode pooler |
+| Direct Database URL | `env:DIRECT_URL` | ✅ In .env.example | Session-capable endpoint — Prisma Migrate / `db push` / Studio only (`directUrl` in schema.prisma) |
 | Paystack Secret Key | `env:PAYSTACK_SECRET_KEY` | ✅ In .env.example | Server-side API calls |
 | Paystack Public Key | `env:NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | ✅ In .env.example | Client-side initialization |
 | Paystack Webhook Secret | `env:PAYSTACK_WEBHOOK_SECRET` | ✅ In .env.example | Verify webhook signatures |

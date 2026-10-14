@@ -3,8 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Runtime (Prisma Client) connects through the transaction-mode pooler.
+  url       = env("DATABASE_URL")
+  // Prisma Migrate (migrate dev/deploy/reset, db push, Studio) needs a
+  // session-capable endpoint and must bypass the transaction-mode pooler.
+  directUrl = env("DIRECT_URL")
 }
 
 model Product {

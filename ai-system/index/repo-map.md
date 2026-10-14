@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: re-verify if folder structure changes
 >
 > **Overview:** Folder structure with purpose of each directory. Auto-regenerable via script.
@@ -242,12 +242,13 @@ public/
 | `tailwind.config.ts` | Design tokens, theme extension (colors, fonts, spacing, radius, shadows, transitions) |
 | `tsconfig.json` | TypeScript config (strict, path aliases @/*) |
 | `next.config.js` | Next.js config (images remotePatterns, optimizePackageImports) |
-| `.env.example` | Template for required environment variables |
+| `.env.example` | Template for required environment variables (incl. `DATABASE_URL` runtime + `DIRECT_URL` migrations split) |
 | `postcss.config.js` | PostCSS plugins (Tailwind, Autoprefixer) |
 | `.eslintrc.json` | ESLint config (Next.js, TypeScript) |
 | `.prettierrc` | Prettier config |
 | `.gitignore` | Ignored files (node_modules, .env, .next, dist, *.log) |
 | `scripts/generate-sitemap.cjs` | Sitemap generation (Prisma queries for dynamic routes) |
+| `scripts/db-deploy.mjs` | Resilient DB deploy for builds/CI — loads `.env`, runs `prisma migrate deploy` via `DIRECT_URL` (falls back to `DATABASE_URL` when unset), `db push` fallback |
 
 ---
 

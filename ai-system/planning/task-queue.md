@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-synced: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-synced: 2026-10-14
 > - staleness-policy: update after every session; re-prioritize weekly
 
 > **Overview:** Immediate actionable tasks. Pull from here for `dev-cycle.md` or `execute-feature.md`. Format: `[TAG] Task description — context/acceptance`
@@ -25,6 +25,7 @@
 | `[x] [S] Set up .env.example with all required variables` | S | DATABASE_URL, PAYSTACK_*, WHATSAPP_NUMBER, GA4_ID, META_PIXEL_ID, HOTJAR_ID, APP_URL |
 | `[x] [S] Configure ESLint, Prettier, TypeScript strict mode` | S | `npm run lint`, `npm run typecheck` pass |
 | `[ ] [M] Set up GitHub Actions CI/CD pipeline` | M | Lint, typecheck, test, build, deploy to Vercel |
+| `[x] [M] Route migrations through DIRECT_URL, runtime through DATABASE_URL` | M | `directUrl = env("DIRECT_URL")` in schema.prisma; `db-deploy.mjs` loads `.env` + falls back to DATABASE_URL only when DIRECT_URL unset; `migrate deploy` applied `000_init` via :5432, both directions verified — 2026-10-14 |
 
 ---
 

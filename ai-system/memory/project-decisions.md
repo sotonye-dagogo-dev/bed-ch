@@ -2,8 +2,8 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: append-only; never delete, only supersede with new entry linking back
 
 > **Overview:** Explicit decisions with rationale. Each entry: Decision, Context, Alternatives Considered, Consequences, Supersedes.
@@ -154,3 +154,25 @@
 - ⚠️ 9 pages to maintain content for
 
 **Supersedes:** None
+
+---
+
+## 2026-10-14: Two-URL Database Routing (DATABASE_URL vs DIRECT_URL)
+
+**Decision:** `DATABASE_URL` is the runtime-only connection string (Prisma Client, transaction-mode pooler `:6543`); `DIRECT_URL` is the migration-only connection string (Prisma Migrate / `db push` / Studio, session-capable `:5432`). Both declared in `prisma/schema.prisma` (`url` + `directUrl`). If `DIRECT_URL` is absent, `scripts/db-deploy.mjs` passes `DIRECT_URL=DATABASE_URL` to the migration child process instead of failing.
+
+**Context:** `.env` already carried both URLs, but the schema referenced only `DATABASE_URL`, so migrations were issued to the transaction-mode pooler — a documented failure mode for `prisma migrate` (session-scoped DDL, advisory locks, prepared statements). Separately, `db-deploy.mjs` never loaded `.env`, so it always skipped deployment when run locally.
+
+**Alternatives Considered:**
+- `--url` flag per command: easy to get wrong, invisible in scripts/CI, easy to leak the pooled URL into migrations
+- Drop `DIRECT_URL` and keep one URL: migrations break against Supabase transaction pooling
+- Adding a dotenv dependency to `db-deploy.mjs`: extra dependency for a ~15-line parse; Node's `process.loadEnvFile` isn't available on all supported Node versions
+
+**Consequences:**
+- ✅ Migrations verifiably run on `:5432`; client verifiably on `:6543` (proven by poisoning each var independently)
+- ✅ `db-deploy.mjs` behaves identically locally and on Vercel; process env still overrides `.env`
+- ✅ DATABASE_URL-only deployments keep working (documented fallback, logged when used)
+- ⚠️ Fallback means a *pooled-only* misconfiguration (DIRECT_URL forgotten while pooling enabled) warns rather than fails unless `DB_DEPLOY_STRICT=true`
+- ⚠️ `DIRECT_URL` must be added to Vercel env before deploy, or deploys take the fallback path
+
+**Supersedes:** None (implements the "connection pooling needed for serverless (PgBouncer/Supabase)" consequence from the 2026-08-29 Database Schema Approach entry)

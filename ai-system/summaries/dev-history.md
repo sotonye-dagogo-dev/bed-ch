@@ -2,11 +2,36 @@
 
 > **Metadata**
 >
-> - last-updated-by: update-ai-system
-> - last-verified-against-code: 2026-09-01
+> - last-updated-by: execute-feature
+> - last-verified-against-code: 2026-10-14
 > - staleness-policy: append-only; weekly summary entries
 >
 > **Overview:** Chronological summary of development milestones. Each entry: Date, Milestone, Summary, Metrics.
+
+---
+
+## 2026-10-14: DB Connection Routing Fixed + First Migration Applied
+
+**Milestone:** `prisma migrate deploy` now runs against `DIRECT_URL`; app runtime pinned to `DATABASE_URL`
+
+**Summary:** Schema declared only `url = env("DATABASE_URL")`, so migrations were being issued to the Supabase transaction-mode pooler (`:6543`) despite `.env` already carrying an unused `DIRECT_URL` (`:5432`, session-capable). Added `directUrl = env("DIRECT_URL")` to the datasource and documented the split. Also fixed `scripts/db-deploy.mjs`, which never loaded `.env` (so it silently skipped DB deployment when run locally) and validated only `DATABASE_URL`. Applied `000_init` to the (empty) Supabase database through `:5432`; `prisma migrate status` now reports up to date. Routing proven both ways by poisoning one var while leaving the other valid.
+
+**Key Accomplishments:**
+- `prisma/schema.prisma` — `directUrl = env("DIRECT_URL")` (migrate/db push/Studio) alongside `url = env("DATABASE_URL")` (Prisma Client)
+- `.env.example` — `DIRECT_URL` added with per-surface usage comments
+- `scripts/db-deploy.mjs` — repo-root `.env` loader (process env wins), `DIRECT_URL → DATABASE_URL` fallback for pooler-less deployments
+- `README.md` — env table, Vercel steps, GH Actions sample now cover `DIRECT_URL`
+- Docs: `system-architecture.md` config table, `project-decisions.md`, `repair-system.md` error entry, task-queue row
+
+**Metrics:**
+- Files modified: 6 code/config (`prisma/schema.prisma`, `.env.example`, `scripts/db-deploy.mjs`, `README.md`) + 5 ai-system docs
+- Migrations applied: 1 (`000_init`); tables now in `public`: 10
+- QA gate: typecheck 0 · lint 0 (pre-existing warnings only) · tests 9/9 · `next build` + sitemap 0
+- Verification: 4 routing checks (2 positive, 2 negative), 2 deploy-script path checks
+
+**Known Gaps (post this change):**
+- `DIRECT_URL` still needs adding to Vercel env (and repo secret if the GH Actions migration workflow is adopted) — until then deploy falls back to the pooled URL by design
+- Supabase DB is empty (no seed data) — `npm run db:seed` pending on this environment
 
 ---
 
